@@ -1,0 +1,126 @@
+alias sSP r6
+alias sTop r7
+alias rVal r8
+alias rValPrev r9
+alias rMat r10
+alias rDev r11
+alias rStat r12
+alias sMat r13
+alias sDev r14
+# Dev: 0:Query,1:None,2:Furnace,3:Tool,
+#      4:Lathe,5:Elec,6:Bender
+alias sStat r15
+# Stat: 0:query,1:demand,2:pulling,3:pulled,
+#       4:Quantified,5:routed
+main:
+yield
+move sSP 0
+l rVal db Setting
+beq rVal rValPrev main
+beq rVal 0 main
+move r0 12
+move r1 rVal
+jal demux
+bneal rStat 1 sFind
+beqal rStat 6 sDelete
+sgt r0 rStat 2
+slt r1 rStat 6
+and r0 r0 r1
+snez r1 rDev
+and r0 r0 r1
+sgt r1 sSP 0
+and r0 r0 r1
+bnezal r0 sUpdate
+beqal rStat 1 sAdd
+seqz r0 rStat
+seqz r1 rDev
+or r0 r0 r1
+bnezal r0 vDisplay
+beqal sSP -1 vReset
+move rValPrev rVal
+j main
+
+demux:
+mod rr0 r1 10
+sub r0 r0 1
+div rr0 r1 10
+mod rr0 rr0 10
+floor rr0 rr0
+sub r0 r0 1
+div rr0 r1 1000000
+floor rr0 rr0
+j ra
+
+sFind:
+move sp sTop
+move r2 ra
+move sSP -1
+findLoop:
+move r0 15
+beq sp 0 r2
+pop r1
+jal demux
+seq r3 rMat sMat
+breqz rStat 3
+sge r4 rStat sStat
+and r3 r3 r4
+breqz rDev 3
+seq r4 rDev sDev
+and r3 r3 r4
+beqz r3 findLoop
+add sSP sp 1
+j r2
+
+sAdd:
+move r0 rVal
+add sTop sTop 1
+move sp 0
+addLoop:
+move r1 r0
+add sp sp 1
+pop r0
+push r1
+bne sTop sp addLoop
+add rVal rVal 1
+yield
+s db Setting rVal
+j ra
+
+sUpdate:
+move sp sSP
+sub sp sp 1
+push rVal
+move sSP -1
+j ra
+
+sDelete:
+beq sSP -1 ra
+move sp sTop
+pop r0
+push 0
+jr 5
+deleteLoop:
+move r1 r0
+pop r0
+push r1
+sub sp sp 1
+bge sp sSP deleteLoop
+move sSP -1
+sub sTop sTop 1
+j ra
+
+vDisplay:
+sub r0 999913 rStat
+add rVal rVal r0
+breq sSP -1 3
+move sp sSP
+pop rVal
+yield
+s db Setting rVal
+move sSP 0
+j ra
+
+vReset:
+yield
+s db Setting 0
+j ra

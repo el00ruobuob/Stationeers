@@ -1,0 +1,86 @@
+alias sorter d0
+alias silo d1
+alias requestMem d2
+alias OreHighMem d3
+alias lcd d4
+
+define stackerL -2020231820
+define stackerR 1585641623
+define item 1724793494 #Coal
+define itemShort 1
+
+alias reqVal r9
+alias hash r10
+alias amount r11 #4
+alias requester r12 #1
+alias error r13 #1
+
+s silo On 1 #Silo
+s silo Mode 1
+sb stackerL On 1
+sb stackerR On 1
+sb stackerL Setting 500
+sb stackerR Setting 500
+s sorter On 1
+s sorter Mode 2
+
+main:
+ls r0 sorter 0 OccupantHash
+seqz r1 r0
+seq r0 r0 item
+sub r0 r0 r1
+s sorter Output r0
+
+l reqVal requestMem Setting
+
+mod error reqVal 10
+div r0 reqVal 100
+floor r0 r0
+mod amount r0 10000
+div r0 r0 10000
+floor hash r0
+beqal hash itemShort requested
+
+l r0 OreHighMem Setting
+l r1 silo Quantity
+brdns lcd 2
+s lcd Setting r1
+mul r1 r1 100
+add r1 r1 itemShort
+bgtal r1 r0 setOreHigh
+mod r0 r0 100
+beqal r0 itemShort setOreHigh
+
+yield
+j main
+
+requested:
+bne error 2 ra
+div r0 amount 400
+ceil r0 r0
+l r1 silo Quantity
+slt error r1 r0
+select error error 9 3
+div reqVal reqVal 10
+
+floor reqVal reqVal
+s db Setting reqVal
+mul reqVal reqVal 10
+add reqVal reqVal error
+beq error 3 export
+s requestMem Setting reqVal
+j ra
+
+export:
+s silo Open 1
+yield
+s silo Open 0
+sleep 2
+sub r0 r0 1
+bgtz r0 export
+s requestMem Setting reqVal
+j ra
+
+setOreHigh:
+s OreHighMem Setting r1
+j ra

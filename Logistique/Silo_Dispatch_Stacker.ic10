@@ -1,0 +1,127 @@
+move sp 1
+push 1724793494 #Coal
+push -983091249 #Cobalt
+push -707307845 #Copper
+push -1348105509 #Gold
+push 1758427767 #Iron
+push -190236170 #Lead
+push 1830218956 #Nickel
+push 1103972403 #Silicon
+push -916518678 #Silver
+move sp 21
+push -404336834 #Copper
+push 226410516 #Gold
+push -1301215609 #Iron
+push 2134647745 #Lead
+push -1406385572 #Nickel
+push -290196476 #Silicon
+push -929742000 #Silver
+move sp 31
+push 1058547521 #Constantan
+push 502280180 #Electrum
+push -297990285 #Invar
+push -82508479 #Solder
+push -654790771 #Steel
+move sp 41
+push 412924554 #Astrolloy
+push -787796599 #Inconel
+push -1897868623 #Stellite
+push 156348098 #Waspaloy
+
+alias Stacker d0
+alias reqIC d1
+alias pQty r5
+alias sortQty r6
+alias sQty r7
+alias sMat r8
+alias sHash r9
+alias rVal r11
+alias rMat r12
+alias rQty r13
+alias rDev r14
+alias rStat r15
+define printID 2 #Furn
+s Stacker Mode 1
+main:
+yield
+ls sQty Stacker 2 Quantity
+beqz sQty main
+ls sHash Stacker 2 OccupantHash
+jal getMat
+jal getData
+jal demux
+sgt r1 rDev 1
+bnezal r1 deCount
+select r2 r1 pQty sQty
+s Stacker Setting r2
+s Stacker Output 0
+seqz r0 sortQty
+and r0 r0 r1
+bnezal r0 updateData
+sleep 1
+j main
+
+getMat:
+move sp 45
+pop r0
+brne r0 sHash -1
+move sMat sp
+j ra
+getData:
+yield
+l rVal reqIC Setting
+bnez rVal assertData
+mul r0 sMat 1000000
+add r0 r0 3
+s reqIC Setting r0
+l rVal reqIC Setting
+l rVal reqIC Setting
+assertData:
+breq rVal r0 -2
+mod r0 rVal 10
+bgt r0 3 getData
+div r0 rVal 100
+floor r0 r0
+mod r1 r0 10000
+beqz r1 getData
+div r0 r0 10000
+floor r0 r0
+bne r0 sMat getData
+s db Setting rVal
+s reqIC Setting 0
+j ra
+updateData:
+sub r0 4 rStat
+add rVal rVal r0
+updateDataStep:
+l r0 reqIC Setting
+brnez r0 -1
+s reqIC Setting rVal
+l r0 reqIC Setting
+l r0 reqIC Setting
+bne r0 rVal updateDataStep
+j ra
+
+demux:
+mod rStat rVal 10
+div r0 rVal 10
+floor r0 r0
+mod rDev r0 10
+div r0 r0 10
+floor r0 r0
+mod rQty r0 10000
+div r0 r0 10000
+floor rMat r0
+j ra
+
+deCount:
+mul r0 rDev 50
+add r0 r0 50
+add sp sMat r0
+pop r0
+select r0 r0 r0 rQty
+min pQty r0 sQty
+sub r0 r0 sQty
+max sortQty r0 0
+push sortQty
+j ra
