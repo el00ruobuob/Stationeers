@@ -1,73 +1,69 @@
-alias sSP r6
-alias sTop r7
-alias rVal r8
-alias rValPrev r9
-alias rMat r10
-alias rDev r11
-alias rStat r12
+alias sSP r4
+alias sTop r5
+alias rVal r6
+alias rValPrev r7
+alias rMat r8
+alias rInf r9
+alias rDev r10
+alias rStat r11
+alias rFlag r12
 alias sMat r13
-alias sDev r14
-# Dev: 0:Query,1:None,2:Furnace,3:Tool,
-#      4:Lathe,5:Elec,6:Bender
+alias sDev r14 
 alias sStat r15
-# Stat: 0:query,1:demand,2:pulling,3:pulled,
-#       4:Quantified,5:routed
 main:
 yield
 move sSP 0
 l rVal db Setting
-beq rVal rValPrev main
-beq rVal 0 main
-move r0 12
+beq rVal rValPrev main # Ignore unchanged rVal
+beq rVal 0 main # Nothing to do with rVal == 0
+move r0 12 # Prepare demux of rVal
 move r1 rVal
 jal demux
-bneal rStat 1 sFind
+breqz rInf 2
+beqal rStat 1 sAdd 
+breq rStat 1 6
+jal sFind
+breq sSP -1 3 # No update or delete if not found
+bltal rStat 6 sUpdate
 beqal rStat 6 sDelete
-sgt r0 rStat 2
-slt r1 rStat 6
-and r0 r0 r1
-snez r1 rDev
-and r0 r0 r1
-sgt r1 sSP 0
-and r0 r0 r1
-bnezal r0 sUpdate
-beqal rStat 1 sAdd
-seqz r0 rStat
-seqz r1 rDev
-or r0 r0 r1
-bnezal r0 vDisplay
-beqal sSP -1 vReset
-move rValPrev rVal
+bnezal rInf vDisplay
+beqal sSP -1 vAck
+move rValPrev rVal # Backup rVal for comparision
 j main
 
 demux:
+mod rr0 r1 10 # Flag
+move r3 4 # Loop
+breq r3 4 3 # overwrite Flag
+breq r3 1 2 # Overwrite Inf
+sub r0 r0 1
+div r1 r1 10
 mod rr0 r1 10
+floor rr0 rr0 # Stat Dev Inf Qty
+sub r3 r3 1
+brgtz r3 -55
 sub r0 r0 1
-div rr0 r1 10
-mod rr0 rr0 10
-floor rr0 rr0
-sub r0 r0 1
-div rr0 r1 1000000
-floor rr0 rr0
+div rr0 r1 10000
+floor rr0 rr0 # Mat
 j ra
 
 sFind:
-move sp sTop
-move r2 ra
-move sSP -1
+move sp sTop # Start at top of Stack
+move r2 ra # Backup ra
+move sSP -1 # Default sSP to -1
 findLoop:
-move r0 15
-beq sp 0 r2
-pop r1
+beq sp 0 r2 # If stack is empty, nothing to do
+move r0 15 # Prepare demux for existing stack data
+pop r1 # Get data from stack
 jal demux
-seq r3 rMat sMat
-breqz rStat 3
-sge r4 rStat sStat
-and r3 r3 r4
-breqz rDev 3
-seq r4 rDev sDev
-and r3 r3 r4
-beqz r3 findLoop
+seq r0 rMat sMat # Check if Material is matching
+breqz rStat 3 # Ignore status if empty
+sge r3 rStat sStat # Check if Status is at least
+and r0 r0 r3
+breqz rDev 3 # Ignore Device if empty
+seq r3 rDev sDev # Check if device matches
+and r0 r0 r3
+beqz r0 findLoop
 add sSP sp 1
 j r2
 
@@ -81,18 +77,22 @@ add sp sp 1
 pop r0
 push r1
 bne sTop sp addLoop
-add rVal rVal 1
-yield
-s db Setting rVal
+add r0 rVal 1
+add r1 r0 1
+s db Setting r0
+l r0 db Setting
+brne r0 r1 -1
+add rVal rVal 9
+move sSP -1
 j ra
-
 sUpdate:
 move sp sSP
 sub sp sp 1
+mul r0 rInf 1000
+sub rVal rVal r0 # Remove Inf before storing
 push rVal
 move sSP -1
 j ra
-
 sDelete:
 beq sSP -1 ra
 move sp sTop
@@ -110,17 +110,19 @@ sub sTop sTop 1
 j ra
 
 vDisplay:
-sub r0 999913 rStat
-add rVal rVal r0
-breq sSP -1 3
+add rVal rVal 100 # Defaults to None Device
+breq sSP -1 6
 move sp sSP
 pop rVal
-yield
-s db Setting rVal
-move sSP 0
+mul r0 rInf 1000 # Add Inf to the stored value
+add rVal rVal r0
+move sSP -1
 j ra
-
-vReset:
-yield
+vAck:
+add rVal rVal 1
+add r0 rVal 1
+s db Setting rVal
+l r1 db Setting
+brne r0 r1 -1
 s db Setting 0
 j ra

@@ -1,26 +1,43 @@
 alias sorter d0
 alias silo d1
-alias requestMem d2
+alias reqIC d2
 alias OreHighMem d3
 alias lcd d4
 
-define stackerL -2020231820
-define stackerR 1585641623
 define item 1724793494 #Coal
-define itemShort 1
+define itemShort 1 #Coal
+#define item -983091249 #Cobalt
+#define itemShort 2 #Cobalt
+#define item -707307845 #Copper
+#define itemShort 3 #Copper
+#define item -1348105509 #Gold
+#define itemShort 4 #Gold
+#define item 1758427767 #Iron
+#define itemShort 5 #Iron
+#define item -190236170 #Lead
+#define itemShort 6 #Lead
+#define item 1830218956 #Nickel
+#define itemShort 7 #Nickel
+#define item 1103972403 #Silicon
+#define itemShort 8 #Silicon
+#define item -916518678 #Silver
+#define itemShort 9 #Silver
+#define item -1516581844 #Uranium
+#define itemShort 10 #Uranium
 
-alias reqVal r9
-alias hash r10
-alias amount r11 #4
-alias requester r12 #1
-alias error r13 #1
+alias rVal r9
+alias rMat r10
+alias rQty r11 #4
+alias rInf r12
+alias rStat r13 #1
+alias rFlag r14
 
 s silo On 1 #Silo
 s silo Mode 1
-sb stackerL On 1
-sb stackerR On 1
-sb stackerL Setting 500
-sb stackerR Setting 500
+sb -2020231820 On 1 # stacker Left
+sb 1585641623 On 1 # stacker Right
+sb -2020231820 Setting 500 # stacker Left
+sb 1585641623 Setting 500 # stacker Right
 s sorter On 1
 s sorter Mode 2
 
@@ -30,17 +47,20 @@ seqz r1 r0
 seq r0 r0 item
 sub r0 r0 r1
 s sorter Output r0
-
-l reqVal requestMem Setting
-
-mod error reqVal 10
-div r0 reqVal 100
+l rVal reqIC Setting
+mod rFlag rVal 10 # Demux rVal to get rFlag,
+div r0 rVal 10    # rStat, rInf & rQty
 floor r0 r0
-mod amount r0 10000
+mod rStat r0 10
+div r0 rVal 100
+floor r0 r0
+mod rInf r0 10
+div r0 r0 10
+floor r0 r0
+mod rQty r0 10000
 div r0 r0 10000
-floor hash r0
-beqal hash itemShort requested
-
+floor rMat r0
+beqal rMat itemShort requested
 l r0 OreHighMem Setting
 l r1 silo Quantity
 brdns lcd 2
@@ -50,25 +70,26 @@ add r1 r1 itemShort
 bgtal r1 r0 setOreHigh
 mod r0 r0 100
 beqal r0 itemShort setOreHigh
-
 yield
 j main
 
 requested:
-bne error 2 ra
-div r0 amount 400
+bne rStat 2 ra # Request only when rInf == 0
+bnez rInf ra   # && rStat == 2
+add r3 rVal 1 # Set Ack and wait for feedback
+s reqIC Setting r3
+add r3 rVal 1
+l r4 reqIC Setting
+breqz r4 2
+brne r4 r3 -2
+div r0 rQty 500
 ceil r0 r0
 l r1 silo Quantity
-slt error r1 r0
-select error error 9 3
-div reqVal reqVal 10
-
-floor reqVal reqVal
-s db Setting reqVal
-mul reqVal reqVal 10
-add reqVal reqVal error
-beq error 3 export
-s requestMem Setting reqVal
+slt r2 r1 r0
+select r2 r2 70 10 # Prepare rStat Update
+add rVal rVal r2
+bnez r2 ra
+bgtz r0 export
 j ra
 
 export:
@@ -78,7 +99,15 @@ s silo Open 0
 sleep 2
 sub r0 r0 1
 bgtz r0 export
-s requestMem Setting reqVal
+add r3 rVal 1      # Set updated rVal, wait
+l r4 reqIC Setting # for SynAck & Ack
+brnez r4 -1
+s reqIC Setting rVal
+l r4 reqIC Setting
+breq r4 rVal -1
+brne r4 r3 -4
+add r3 rVal 1
+s reqIC Setting r3
 j ra
 
 setOreHigh:

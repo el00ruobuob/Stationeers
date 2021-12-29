@@ -3,7 +3,7 @@ alias ingotQty d1
 alias startMelt d2
 alias pressMem d3
 alias tempMem d4
-alias requestMem d5
+alias reqIC d5
 
 alias targetQty r3
 alias ingotShort r4
@@ -54,23 +54,25 @@ add r0 r0 1
 beqz rr0 nextReq
 mul r1 rr0 targetQty
 add r14 r14 r1
-mul r14 r14 100
-add r14 r14 21
+mul r14 r14 10000
+add r14 r14 211
 callItem:
-yield
-l r1 requestMem Setting
-bnez r1 callItem
-s requestMem Setting r14
-l r1 requestMem Setting
-l r1 requestMem Setting
-bne r1 r14 callItem
+add r15 r14 1 # Prepare Syn-Ack
+l r1 reqIC Setting
+brnez r1 -1 # Wait for reqIC available
+s reqIC Setting r14
+l r1 reqIC Setting
+breq r1 r14 -1 # wait for reqIC to get changed
+brne r1 r15 -5 # wait for Syn-Ack or restart
+add r15 r15 1 # Prepare Ack
+s reqIC Setting r15 # Send Ack
 nextReq:
 add r0 r0 1
 blt r0 14 startReq
 waitMelt:
 yield
-lb r0 545937711 RecipeHash 0
-lb r1 545937711 Reagents 0
+lb r0 545937711 RecipeHash Average
+lb r1 545937711 Reagents Average
 seq r0 r0 ingotHash
 mul r2 targetQty 100
 sgt r14 ingotShort 40
@@ -84,7 +86,7 @@ and r0 r0 r1
 beqz r0 waitMelt
 sb 545937711 Open 1
 sleep 2
-lb r1 545937711 Reagents 0
+lb r1 545937711 Reagents Average
 brnez r1 -2
 sb 545937711 Open 0
 j ra

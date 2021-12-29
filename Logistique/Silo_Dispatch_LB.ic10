@@ -28,70 +28,60 @@ push -787796599 #Inconel
 push -1897868623 #Stellite
 push 156348098 #Waspaloy
 
-alias sorter d0
+alias Sorter d0
 alias reqIC d1
+alias pQty r4
+alias sortQty r5
+alias sQty r6
+alias sMat r7
+alias sHash r8
+alias rVal r9
+alias rMat r10
+alias rQty r11
+alias rInf r12
+alias rDev r13
+alias rStat r14
+alias rFlag r15
 
-alias pQty r5
-alias sortQty r6
-alias sQty r7
-alias sMat r8
-alias sHash r9
-alias rVal r11
-alias rMat r12
-alias rQty r13
-alias rDev r14
-alias rStat r15
-define printID 2 #Furn
-s sorter Mode 2
+define infID 2 #SorterLB
+
+s Sorter Mode 2
 
 main:
 yield
-ls sQty sorter 0 Quantity
+ls sQty Sorter 0 Quantity
 beqz sQty main
-ls sHash sorter 0 OccupantHash
-jal getMat
-jal getData
+ls sHash Sorter 0 OccupantHash
+move sp 45 # Get Material
+pop r0
+brne r0 sHash -1 # Loop around Stack to find hash
+move sMat sp
+mul r0 sMat 100000000 # Get ReqIC Data
+mul r1 infID 1000 # Prepare Inf in reqVal
+add r0 r0 r1 # Add Inf value
+add r0 r0 1 # Set Flag to Syn
+l rVal reqIC Setting
+brnez rVal -1 # Loop until rVal == 0
+s reqIC Setting r0 # Set the request for info
+l rVal reqIC Setting
+breq rVal r0 -1 # Loop until rVal has changed
 jal demux
-sgt r1 rDev 1 # pour le dispatch / retour silo
+brne rInf infID -6 # Stacker == 1XXX, restart until
+brne rFlag 2 -7 # Wait for SYN-ACK, restart until
+add r0 rVal 1 # Prepare Ack
+s reqIC Setting r0 # Final Ack
+sgt r1 rDev 1 # Prepare deCount when dev != None
 bnezal r1 deCount
-s sorter Output r1
+s Sorter Output r1
 seqz r0 sortQty
 and r0 r0 r1
 bnezal r0 updateData
-sleep 1
+sleep 2
 j main
 
-getMat:
-move sp 45
-pop r0
-brne r0 sHash -1
-move sMat sp
-j ra
-getData:
-yield
-l rVal reqIC Setting
-bnez rVal assertData
-mul r0 sMat 1000000
-add r0 r0 4
-s reqIC Setting r0
-l rVal reqIC Setting
-l rVal reqIC Setting
-assertData:
-breq rVal r0 -2
-mod r0 rVal 10
-bgt r0 4 getData
-div r0 rVal 100
-floor r0 r0
-mod r1 r0 10000
-beqz r1 getData
-div r0 r0 10000
-floor r0 r0
-bne r0 sMat getData
-s db Setting rVal
-s reqIC Setting 0
-j ra
 updateData:
 sub r0 5 rStat
+mul r0 r0 10
 add rVal rVal r0
 updateDataStep:
 l r0 reqIC Setting
@@ -102,13 +92,14 @@ l r0 reqIC Setting
 bne r0 rVal updateDataStep
 j ra
 
-demux:
-mod rStat rVal 10
-div r0 rVal 10
-floor r0 r0
-mod rDev r0 10
+demux: # new
+move r3 15 # Prepare to get from Flag to Inf
+move r0 rVal
+mod rr3 r0 10
 div r0 r0 10
 floor r0 r0
+sub r3 r3 1
+brgt r3 11 -4
 mod rQty r0 10000
 div r0 r0 10000
 floor rMat r0

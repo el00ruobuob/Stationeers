@@ -59,8 +59,8 @@ MMQQQQIRSF
         5) wait for F == 2  
         6) set back with F = 3  (Silo will wait for F == 3 or 0 to set back with S = 3 and F = 1)  
 3) If I != 0
-    1) If Q && R != 0
-        1) Search stack with MM, Q & R
+    1) If R && S != 0
+        1) Search stack with == MM, == R & <= S
         2) If S < 5
             1) Update stack with received value
         3) if S == 5:  
