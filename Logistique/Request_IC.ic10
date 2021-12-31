@@ -10,6 +10,7 @@ alias rFlag r12
 alias sMat r13
 alias sDev r14 
 alias sStat r15
+move sTop 0
 main:
 yield
 move sSP 0
@@ -19,34 +20,35 @@ beq rVal 0 main # Nothing to do with rVal == 0
 move r0 12 # Prepare demux of rVal
 move r1 rVal
 jal demux
-breqz rInf 2
+brnez rInf 2
 beqal rStat 1 sAdd 
-breq rStat 1 6
+breq rStat 1 7
 jal sFind
+breqz rDev 4
 breq sSP -1 3 # No update or delete if not found
 bltal rStat 6 sUpdate
 beqal rStat 6 sDelete
-bnezal rInf vDisplay
+beqzal rDev vDisplay
 beqal sSP -1 vAck
 move rValPrev rVal # Backup rVal for comparision
 j main
 
 demux:
 mod rr0 r1 10 # Flag
-move r3 4 # Loop
-breq r3 4 3 # overwrite Flag
-breq r3 1 2 # Overwrite Inf
+move r3 3 # Loop
+brlt r0 13 2 
+breq r3 3 2 # overwrite Flag
 sub r0 r0 1
 div r1 r1 10
 mod rr0 r1 10
-floor rr0 rr0 # Stat Dev Inf Qty
+floor rr0 rr0 # Stat Dev Inf
 sub r3 r3 1
-brgtz r3 -55
+brgtz r3 -7
+breq r0 13 2 # Overwrite Inf
 sub r0 r0 1
-div rr0 r1 10000
+div rr0 r1 100000
 floor rr0 rr0 # Mat
 j ra
-
 sFind:
 move sp sTop # Start at top of Stack
 move r2 ra # Backup ra
@@ -66,7 +68,6 @@ and r0 r0 r3
 beqz r0 findLoop
 add sSP sp 1
 j r2
-
 sAdd:
 move r0 rVal
 add sTop sTop 1
@@ -89,8 +90,8 @@ sUpdate:
 move sp sSP
 sub sp sp 1
 mul r0 rInf 1000
-sub rVal rVal r0 # Remove Inf before storing
-push rVal
+sub r0 rVal r0 # Remove Inf before storing
+push r0
 move sSP -1
 j ra
 sDelete:
@@ -108,7 +109,6 @@ bge sp sSP deleteLoop
 move sSP -1
 sub sTop sTop 1
 j ra
-
 vDisplay:
 add rVal rVal 100 # Defaults to None Device
 breq sSP -1 6

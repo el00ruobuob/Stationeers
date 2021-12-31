@@ -27,6 +27,8 @@ push 412924554 #Astrolloy
 push -787796599 #Inconel
 push -1897868623 #Stellite
 push 156348098 #Waspaloy
+push 0
+brlt sp 512 -1
 
 alias Sorter d0
 alias reqIC d1
@@ -59,17 +61,8 @@ move sMat sp
 mul r0 sMat 100000000 # Get ReqIC Data
 mul r1 infID 1000 # Prepare Inf in reqVal
 add r0 r0 r1 # Add Inf value
-add r0 r0 1 # Set Flag to Syn
-l rVal reqIC Setting
-brnez rVal -1 # Loop until rVal == 0
-s reqIC Setting r0 # Set the request for info
-l rVal reqIC Setting
-breq rVal r0 -1 # Loop until rVal has changed
-jal demux
-brne rInf infID -6 # Stacker == 1XXX, restart until
-brne rFlag 2 -7 # Wait for SYN-ACK, restart until
-add r0 rVal 1 # Prepare Ack
-s reqIC Setting r0 # Final Ack
+add r0 r0 41 # Set Stat & Flag to Syn
+jal startCom
 sgt r1 rDev 1 # Prepare deCount when dev != None
 bnezal r1 deCount
 s Sorter Output r1
@@ -82,15 +75,22 @@ j main
 updateData:
 sub r0 5 rStat
 mul r0 r0 10
-add rVal rVal r0
-updateDataStep:
-l r0 reqIC Setting
-brnez r0 -1
-s reqIC Setting rVal
-l r0 reqIC Setting
-l r0 reqIC Setting
-bne r0 rVal updateDataStep
-j ra
+sub r0 r0 rFlag
+add r0 r0 1
+add r0 rVal r0
+startCom: # This com method is used in info request
+move r2 ra
+l rVal reqIC Setting
+brnez rVal -1 # Loop until rVal == 0
+s reqIC Setting r0 # Set the needed value
+l rVal reqIC Setting
+breq rVal r0 -1 # Loop until rVal has changed
+jal demux
+brne rInf infID -6 # Stacker == 1XXX, restart until
+brne rFlag 2 -7 # Wait for SYN-ACK, restart until
+add r0 rVal 1 # Prepare Ack
+s reqIC Setting r0 # Final Ack
+j r2
 
 demux: # new
 move r3 15 # Prepare to get from Flag to Inf

@@ -9,15 +9,16 @@ yield
 l r0 print RecipeHash
 sne r2 r0 r9 # Recipe has changed from prevHash
 l r1 print ExportCount
-sge r3 r1 prevExport # Export has been reset
+slt r3 r1 prevExport # Export has been reset
 or r2 r2 r3 # Any of those previous too
 select importNeeded r2 0 importNeeded # Reset needs
+s print ClearMemory r2 # Needs a reset here
 move r9 r0 # Store prevHash
-move prevExport r1
+move prevExport r1 # Backup ExportCount
 bgtz importNeeded end
 l r0 print Activate
 l r1 forceButton Setting
-or r0 r0 r1
+or r0 r0 r1 # Check materials when (up to) printing
 beqz r0 end
 lr r7 print Recipe Copper
 lr r6 print Contents Copper
@@ -91,7 +92,6 @@ end:
 l r0 print ImportCount # Counter reseted by Qty IC
 beqz r0 main
 beq r0 importNeeded reactivate # All is received
-s print ClearMemory 1 # Needs a reset here
 j main
 evaluate:
 l r0 stacker Setting # How much to print
@@ -121,7 +121,7 @@ j ra
 reactivate:
 move importNeeded 0
 l r0 print Activate
-bnez r0 main
+bnez r0 main # Do not reactivate when printing
 s print On 1
 yield
 s print Activate 1

@@ -64,7 +64,7 @@ mod rFlag rVal 10 # Demux rVal to get rFlag,
 div r0 rVal 10    # rStat, rInf & rQty
 floor r0 r0
 mod rStat r0 10
-div r0 rVal 100
+div r0 r0 100
 floor r0 r0
 mod rInf r0 10
 div r0 r0 10
@@ -86,11 +86,11 @@ yield
 j main
 
 requested:
-bne rStat 2 ra # Request only when rInf == 0
-bnez rInf ra   # && rStat == 2
+bne rStat 2 ra # Request only when rStat == 2
+bnez rInf ra   # && rInf == 0
 add r3 rVal 1 # Set Ack and wait for feedback
 s reqIC Setting r3
-add r3 rVal 1
+add r3 r3 1
 l r4 reqIC Setting
 breqz r4 2
 brne r4 r3 -2
@@ -100,7 +100,7 @@ l r1 silo Quantity
 slt r2 r1 r0
 select r2 r2 70 10 # Prepare rStat Update
 add rVal rVal r2
-bnez r2 ra
+bne r2 10 ra
 bgtz r0 export
 j ra
 
@@ -118,7 +118,7 @@ s reqIC Setting rVal
 l r4 reqIC Setting
 breq r4 rVal -1
 brne r4 r3 -4
-add r3 rVal 1
+add r3 r4 1
 s reqIC Setting r3
 j ra
 
