@@ -82,7 +82,7 @@ add r3 r3 1
 l r4 reqIC Setting
 breqz r4 2
 brne r4 r3 -2
-div r0 rQty 500
+div r0 rQty 400
 ceil r0 r0
 l r1 silo Quantity
 slt r2 r1 r0

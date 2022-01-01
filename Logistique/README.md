@@ -3,6 +3,11 @@
 MMQQQQIRSF
 
 * MM: 2 Digits, Type of material
+  * 01-10: Ores, Coal - Uranium
+  * 21-44: Ingots, alloys
+    * 21-27: Copper - Silver
+    * 31-35: Constantan - Steel
+    * 41-44: Astroloy - Waspaloy
 * QQQQ: 4 digits, Quantity of said material
 * I: 1 Digit, Device needing information
   * 0: Query
@@ -73,3 +78,62 @@ MMQQQQIRSF
         3) Wait for F == 3
 4) If F == 3
     1) Set back to 0
+
+## Pannels
+### ReqIC pannels
+
+```
+Automation variable:
+* MM.QQQQ.I.R.S.F
+
+Data are multiplexed on 10 digits
+```
+```
+MM: 2 Digits, Type of material
+* 01-10: Ores, Coal - Uranium
+* 21-44: Ingots, alloys
+* 21-27: Copper - Silver
+* 31-35: Constantan - Steel
+* 41-44: Astroloy - Waspaloy
+```
+```
+QQQQ: 4 digits, Quantity of said material
+```
+```
+I: 1 Digit, Device needing information
+* 0: Query
+* 1: Stacker
+* 2: SorterLB
+* 3: SorterFurn
+* 4: SorterTool
+* 5: SorterLathe
+* 6: SorterElec
+* 7: SorterBender (not used yet)
+```
+```
+R: 1 Digit, Requester (printer, furnace)
+* 0: Query
+* 1: None
+* 2: Furnace
+* 3: Tool
+* 4: Lathe
+* 5: Elec
+* 6: Bender
+```
+```
+S: 1 Digit, Status of delivery
+* 0: query
+* 1: demand
+* 2: pulling
+* 3: pulled
+* 4: Quantified
+* 5: routed
+* 9: Error
+```
+```
+F: 1 Digit, Ack status
+* 1: SYN
+* 2: SYNACK
+* 3: ACK
+Last Ack is always done from reqIC (3 is not read by device)
+```
