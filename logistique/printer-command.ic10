@@ -1,0 +1,128 @@
+alias print d0
+alias stacker d1
+alias reqIC d2
+alias forceButton d3
+alias prevExport r10
+alias importNeeded r11
+yield #main
+l r0 print RecipeHash
+sne r2 r0 r9 # Recipe has changed from prevHash
+l r1 print ExportCount
+slt r3 r1 prevExport # Export has been reset
+or r2 r2 r3 # Any of those previous too
+select importNeeded r2 0 importNeeded # Reset needs
+s print ClearMemory r2 # Needs a reset here
+move r9 r0 # Store prevHash
+move prevExport r1 # Backup ExportCount
+bgtz importNeeded 89
+l r0 print Activate
+l r1 forceButton Setting
+or r0 r0 r1 # Check materials when (up to) printing
+beqz r0 89
+lr r7 print Recipe Copper
+lr r6 print Contents Copper
+move r8 210000
+bnezal r7 evaluate
+lr r7 print Recipe Gold
+lr r6 print Contents Gold
+move r8 220000
+bnezal r7 evaluate
+lr r7 print Recipe Iron
+lr r6 print Contents Iron
+move r8 230000
+bnezal r7 evaluate
+lr r7 print Recipe Lead
+lr r6 print Contents Lead
+move r8 240000
+bnezal r7 evaluate
+lr r7 print Recipe Nickel
+lr r6 print Contents Nickel
+move r8 250000
+bnezal r7 evaluate
+lr r7 print Recipe Silicon
+lr r6 print Contents Silicon
+move r8 260000
+bnezal r7 evaluate
+lr r7 print Recipe Silver
+lr r6 print Contents Silver
+move r8 270000
+bnezal r7 evaluate
+lr r7 print Recipe Constantan
+lr r6 print Contents Constantan
+move r8 310000
+bnezal r7 evaluate
+lr r7 print Recipe Electrum
+lr r6 print Contents Electrum
+move r8 320000
+bnezal r7 evaluate
+lr r7 print Recipe Invar
+lr r6 print Contents Invar
+move r8 330000
+bnezal r7 evaluate
+lr r7 print Recipe Solder
+lr r6 print Contents Solder
+move r8 340000
+bnezal r7 evaluate
+lr r7 print Recipe Steel
+lr r6 print Contents Steel
+move r8 350000
+bnezal r7 evaluate
+lr r7 print Recipe Astroloy
+lr r6 print Contents Astroloy
+move r8 410000
+bnezal r7 evaluate
+lr r7 print Recipe Hastelloy
+lr r6 print Contents Hastelloy
+move r8 450000
+bnezal r7 evaluate
+lr r7 print Recipe Inconel
+lr r6 print Contents Inconel
+move r8 420000
+bnezal r7 evaluate
+lr r7 print Recipe Stellite
+lr r6 print Contents Stellite
+move r8 430000
+bnezal r7 evaluate
+lr r7 print Recipe Waspaloy
+lr r6 print Contents Waspaloy
+move r8 440000
+bnezal r7 evaluate
+l r0 print ImportCount #End Counter reseted by Qty
+beqz r0 6
+beq r0 importNeeded reactivate # All is received
+j 6
+evaluate:
+l r0 stacker Setting # How much to print
+l r1 print ExportCount # How much printed yet
+sub r0 r0 r1 # Left to print
+mul r7 r7 r0 # Material needed for LtP
+sub r7 r7 r6 # Material missing for LtP
+add r7 r7 100 # Add some marging for next print
+blez r7 ra # If enough material, next
+ceil r7 r7
+add r0 r8 r7 # Concatenate ItemShort value & Qty
+mul r0 r0 10000 # Make room for IRSF
+add r0 r0 311 #Tool IRSF
+div r1 r7 500 #Count imports expected
+ceil r1 r1
+add importNeeded importNeeded r1 # Total import expected
+add r2 r0 1 # Prepare Syn-Ack
+add r3 r2 1 # Prepare Ack
+yield
+l r1 reqIC Setting
+brnez r1 -2 # wait for reqIC available
+s reqIC Setting r0 # Set reqIC with Syn
+yield
+l r1 reqIC Setting
+breq r1 r0 -2 # Wait for change
+brne r1 r2 -7 # Wait for Syn-Ack or restart
+s reqIC Setting r3 # Set Ack
+j ra
+reactivate:
+move importNeeded 0
+l r0 print Activate
+bnez r0 6 # Do not reactivate when printing
+s print On 1
+yield
+s print Activate 1
+j 6

@@ -1,0 +1,80 @@
+alias sensorInt d0
+alias sensorExt d1
+alias doorInt d2
+alias doorExt d3
+
+define doorComposite -793837322
+define console 235638270
+define sensor -1252983604
+
+alias presInt r5
+alias presExt r6
+alias tempInt r7
+alias tempExt r8
+alias ratioX r9
+alias ratioH r10
+
+main:
+l presInt sensorInt Pressure
+l presExt sensorExt Pressure
+l tempInt sensorInt Temperature
+l tempExt sensorExt Temperature
+lb ratioX sensor RatioPollutant Maximum
+lb ratioH sensor RatioVolatiles Maximum
+
+jal store
+
+slt r0 presInt 50
+slt r1 presExt 50
+or r0 r0 r1
+
+sgt r1 presInt 125
+sgt r2 presExt 125
+or r1 r1 r2
+or r0 r0 r1
+
+sgt r1 tempInt 318
+sgt r2 tempExt 318
+or r1 r1 r2
+or r0 r0 r1
+
+sgt r1 ratioX 0.005
+sgt r2 ratioH 0.005
+or r1 r1 r2
+or r0 r0 r1
+
+sub r1 1 r0
+
+sb console On r0
+sb doorComposite Mode r1
+sb doorComposite On r0
+#sb doorComposite Lock r0
+beqz r1 restore
+sb doorComposite Open r1
+
+end:
+yield
+j main
+
+store:
+l r0 doorInt Open
+l r1 doorExt Open
+sub r2 r0 r1
+beqz r2 ra
+mul r0 r0 10
+add r0 r0 r1
+s db Setting r0
+j ra
+
+restore:
+l r0 doorInt Open
+l r1 doorExt Open
+and r0 r0 r1
+beqz r0 end
+l r0 db Setting
+mod r1 r0 10
+div r0 r0 10
+floor r0 r0
+s doorInt Open r0
+s doorExt Open r1
+j end

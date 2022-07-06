@@ -1,0 +1,124 @@
+move sp 1
+push 1724793494 #Coal
+push -983091249 #Cobalt
+push -707307845 #Copper
+push -1348105509 #Gold
+push 1758427767 #Iron
+push -190236170 #Lead
+push 1830218956 #Nickel
+push 1103972403 #Silicon
+push -916518678 #Silver
+move sp 21
+push -404336834 #Copper
+push 226410516 #Gold
+push -1301215609 #Iron
+push 2134647745 #Lead
+push -1406385572 #Nickel
+push -290196476 #Silicon
+push -929742000 #Silver
+move sp 31
+push 1058547521 #Constantan
+push 502280180 #Electrum
+push -297990285 #Invar
+push -82508479 #Solder
+push -654790771 #Steel
+move sp 41
+push 412924554 #Astrolloy
+push -787796599 #Inconel
+push -1897868623 #Stellite
+push 156348098 #Waspaloy
+push 0
+brlt sp 512 -1
+
+alias Stacker d0
+alias reqIC d1
+alias pQty r4
+alias sortQty r5
+alias sQty r6
+alias sMat r7
+alias sHash r8
+alias rVal r9
+alias rMat r10
+alias rQty r11
+alias rInf r12
+alias rDev r13
+alias rStat r14
+alias rFlag r15
+
+define infID 1 #Stacker
+
+s Stacker Mode 1
+
+main:
+yield
+ls sQty Stacker 2 Quantity
+beqz sQty main
+ls r0 Stacker 1 Occupied
+bgtz r0 main
+ls sHash Stacker 2 OccupantHash
+move sp 45 # Get Material
+pop r0
+brne r0 sHash -1 # Loop around Stack to find hash
+move sMat sp
+mul r0 sMat 100000000 # Get ReqIC Data
+mul r1 infID 1000 # Prepare Inf in reqVal
+add r0 r0 r1 # Add Inf value
+add r0 r0 31 # Set Stat & Flag to Syn
+jal startCom
+sgt r1 rDev 1 # Prepare deCount when dev != None
+bnezal r1 deCount
+select r2 r1 pQty sQty
+s Stacker Setting r2
+s Stacker Output 0
+seqz r0 sortQty
+and r0 r0 r1
+bnezal r0 updateData
+sleep 2
+j main
+
+updateData:
+sub r0 4 rStat
+mul r0 r0 10
+sub r0 r0 rFlag
+add r0 r0 1
+add r0 rVal r0
+startCom: # This com method is used in info request
+move r2 ra
+yield
+l rVal reqIC Setting
+brnez rVal -2 # Loop until rVal == 0
+s reqIC Setting r0 # Set the needed value
+yield
+l rVal reqIC Setting
+breq rVal r0 -3 # Loop until rVal has changed
+jal demux
+brne rInf infID -8 # Stacker == 1XXX, restart until
+brne rFlag 2 -9 # Wait for SYN-ACK, restart until
+add r0 rVal 1 # Prepare Ack
+s reqIC Setting r0 # Final Ack
+j r2
+
+demux: # new
+move r3 15 # Prepare to get from Flag to Inf
+move r0 rVal
+mod rr3 r0 10
+div r0 r0 10
+floor r0 r0
+sub r3 r3 1
+brgt r3 11 -4
+mod rQty r0 10000
+div r0 r0 10000
+floor rMat r0
+j ra
+
+deCount:
+mul r0 rDev 50
+add r0 r0 50
+add sp sMat r0
+pop r0
+select r0 r0 r0 rQty
+min pQty r0 sQty
+sub r0 r0 sQty
+max sortQty r0 0
+push sortQty
+j ra

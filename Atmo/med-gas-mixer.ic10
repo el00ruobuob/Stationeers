@@ -1,0 +1,45 @@
+alias gasMixer d0
+alias T1Analyzer d1
+alias T2Analyzer d2
+alias MedAnalyzer d3
+
+alias mixPressure r2
+alias mixerState r3
+alias T1Temp r4
+alias T2Temp r5
+
+define targetMixPresssure 50000
+
+main:
+yield
+l r0 T1Analyzer Pressure
+l r1 T2Analyzer Pressure
+and r0 r0 r1
+beqz r0 main
+
+l T1Temp T1Analyzer Temperature
+l T2Temp T2Analyzer Temperature
+#= 100 / ( 1 + Temp.oxygen/(2*Temp.volatiles) )
+#Tf = T1*R+T2*(1-R) = T1*R+T2-T2*R
+#Tf/R = T1+T2/R-T2
+#Tf/R-T2/R = T1 - T2
+#Tf-T2 = R*(T1-T2)
+#(Tf-T2)/(T1-T2) = R
+
+#R = (100/(T2-T1)) x ((T1 x T2 / Tf) - T1)
+
+div r0 T2Temp 550
+mul r0 r0 T1Temp
+sub r0 r0 T1Temp
+sub r1 T2Temp T1Temp
+div r1 100 r1
+mul r0 r0 r1
+
+s db Setting r0
+s gasMixer Setting r0
+
+l mixPressure MedAnalyzer Pressure
+slt mixerState mixPressure targetMixPresssure
+s gasMixer On mixerState
+
+j main

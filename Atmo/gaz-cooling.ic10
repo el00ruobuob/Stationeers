@@ -1,0 +1,77 @@
+alias DVfiltering d0
+alias DVcooling d1
+alias SensorCooling d2
+alias PumpCooling d3
+alias SensorFiltering d4
+alias PumpFiltering d5
+
+define tank 272136332
+define filtration -348054045
+
+alias tankPress r5
+alias filteringPress r6
+alias coolingTemp r7
+alias coolingPress r8
+
+alias filterPumpOn r10
+alias filterOn r11
+alias coolingPumpOn r12
+alias coolingDVon r13
+alias filterDVon r14
+
+main:
+yield
+lb tankPress tank Pressure Average
+l filteringPress SensorFiltering Pressure
+l coolingTemp SensorCooling Temperature
+l coolingPress SensorCooling Pressure
+
+# Filtration
+slt r0 filteringPress 1000
+and filterPumpOn filterPumpOn r0
+slt r0 filteringPress 100
+or filterPumpOn filterPumpOn r0
+sge r0 tankPress 100
+and filterPumpOn filterPumpOn r0
+sub r0 1 coolingPumpOn
+and filterPumpOn filterPumpOn r0
+s PumpFiltering On filterPumpOn
+
+l r0 SensorFiltering RatioPollutant
+max r0 r0 0
+l r1 SensorFiltering RatioNitrousOxide
+max r1 r1 0
+or filterOn r0 r1
+sb filtration On filterOn
+
+# Cooling
+slt r0 coolingPress 1000
+and coolingPumpOn coolingPumpOn r0
+slt r0 coolingPress 100
+or coolingPumpOn coolingPumpOn r0
+sge r0 filteringPress 100
+and coolingPumpOn coolingPumpOn r0
+sub r0 1 filterPumpOn
+and coolingPumpOn coolingPumpOn r0
+sub r0 1 filterOn
+and coolingPumpOn coolingPumpOn r0
+s PumpCooling On coolingPumpOn
+
+sge coolingDVon coolingTemp 298
+sub r0 1 coolingPumpOn
+and coolingDVon coolingDVon r0
+sub r0 1 filterDVon
+and coolingDVon coolingDVon r0
+s DVcooling On coolingDVon
+
+# Filtration Stockage
+slt filterDVon coolingTemp 298
+sgt r0 coolingPress 10
+and filterDVon filterDVon r0
+sub r0 1 coolingDVon
+and filterDVon filterDVon r0
+sub r0 1 coolingPumpOn
+and filterDVon filterDVon r0
+s DVfiltering On filterDVon
+
+j main

@@ -1,0 +1,9 @@
+define bat -1388288459
+define gen 813146305
+
+main:
+yield
+lb r0 bat Ratio Average
+slt r0 r0 0.5
+sb gen On r0
+j main

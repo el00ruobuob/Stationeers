@@ -1,0 +1,17 @@
+alias sensor d0
+alias pump d1
+alias BPR d2
+
+alias press r5
+
+main:
+yield
+s pump Mode 0
+
+l press sensor Pressure
+sgt r0 press 100
+s pump On r0
+sgtz r0 press
+s BPR On r0
+
+j main

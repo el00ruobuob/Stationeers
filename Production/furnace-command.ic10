@@ -1,0 +1,94 @@
+alias ingotDial d0
+alias ingotQty d1
+alias startMelt d2
+alias pressMem d3
+alias tempMem d4
+alias reqIC d5
+
+alias targetQty r3
+alias ingotShort r4
+alias ingotHash r5
+alias targetTemp r6
+alias targetPress r7
+alias item1Short r8
+alias item1Qty r9
+alias item2Short r10
+alias item2Qty r11
+alias item3Short r12
+alias item3Qty r13
+
+main:
+
+jal selector
+l r0 startMelt Setting
+mul r0 r0 targetQty
+bnezal r0 startFurn
+
+yield
+j main
+
+selector:
+l r0 ingotDial Setting
+add r0 r0 1
+move sp r0
+pop ingotShort
+move sp ingotShort
+pop ingotHash
+s db Setting ingotHash
+l targetQty ingotQty Setting
+j ra
+
+startFurn:
+mul r0 ingotShort 10
+move sp r0
+move r0 6
+pop rr0
+add r0 r0 1
+brlt r0 14 -2
+s tempMem Setting 737
+s pressMem Setting -2500
+move r0 8
+startReq:
+mul r14 rr0 10000
+add r0 r0 1
+beqz rr0 nextReq
+mul r1 rr0 targetQty
+add r14 r14 r1
+mul r14 r14 10000
+add r14 r14 211
+callItem:
+add r15 r14 1 # Prepare Syn-Ack
+yield
+l r1 reqIC Setting
+brnez r1 -2 # Wait for reqIC available
+s reqIC Setting r14
+yield
+l r1 reqIC Setting
+breq r1 r14 -2 # wait for reqIC to get changed
+brne r1 r15 -7 # wait for Syn-Ack or restart
+add r15 r15 1 # Prepare Ack
+s reqIC Setting r15 # Send Ack
+nextReq:
+add r0 r0 1
+blt r0 14 startReq
+waitMelt:
+yield
+lb r0 545937711 RecipeHash Average
+lb r1 545937711 Reagents Average
+seq r0 r0 ingotHash
+mul r2 targetQty 100
+sgt r14 ingotShort 40
+select r14 r14 4 1
+mul r2 r2 r14
+seq r1 r1 r2
+beqz r1 waitMelt
+s tempMem Setting targetTemp
+s pressMem Setting targetPress
+and r0 r0 r1
+beqz r0 waitMelt
+sb 545937711 Open 1
+sleep 2
+lb r1 545937711 Reagents Average
+brnez r1 -2
+sb 545937711 Open 0
+j ra

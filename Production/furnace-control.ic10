@@ -1,0 +1,123 @@
+alias coldPump d0
+alias coldSensor d1
+alias hotPump d2
+alias hotSensor d3
+alias midPump d4
+alias midSensor d5
+
+define furnace 545937711
+define memory -851746783
+
+alias inMol r5
+alias currentMol r6
+alias targetMol r7
+alias targetTemp r8
+alias targetPress r9
+alias volumeIn r10
+alias inTemp r11
+alias inPress r12
+alias furnaceTemp r13
+alias furnacePress r14
+# r15 = dev 0/2 ; sensor 1/3
+
+define rConst 8.3144
+define rConstB 16.6288
+
+s coldPump Mode 0
+s hotPump Mode 1
+s midPump Mode 0
+
+main:
+s coldPump On 0
+s hotPump On 0
+s midPump On 0
+
+lb targetTemp memory Setting Maximum
+# Pressure consign stored as negative
+lb targetPress memory Setting Minimum
+abs targetPress targetPress
+lb furnaceTemp furnace Temperature Average
+lb furnacePress furnace Pressure Average
+bgt furnacePress 58000 emerg
+# Check If hot or cold is needed
+sgtz r0 furnacePress
+l r1 midSensor Temperature
+select r0 r0 furnaceTemp r1
+slt r0 r0 targetTemp
+select r15 r0 3 1
+l inTemp dr15 Temperature
+l inPress dr15 Pressure
+select r15 r0 2 0
+
+# targetMol = 1000 * targetPress / targetTemp
+mul r0 1000 targetPress
+div targetMol r0 targetTemp
+
+mul r0 1000 furnacePress
+div currentMol r0 furnaceTemp
+
+# Calcul volumeIn=inTemp*currentMol*(furnaceTemp-
+# targetTemp)/(inPress*(targetTemp-inTemp))
+sub volumeIn furnaceTemp targetTemp
+mul volumeIn volumeIn currentMol
+mul volumeIn volumeIn inTemp
+div volumeIn volumeIn inPress
+sub r0 targetTemp inTemp
+div volumeIn volumeIn r0
+
+mul r0 volumeIn inPress
+div inMol r0 inTemp
+
+# Remplir de targetMol - (currentMol + inMol)
+sub r0 targetMol currentMol
+sub r0 r0 inMol
+mul r4 targetMol -0.01
+slt r1 r0 r4
+mul r4 r4 -1
+sgt r2 r0 r4
+or r3 r1 r2
+abs r0 r0
+# Vent
+mul r1 r1 r0
+mul r1 r1 furnaceTemp
+div r1 r1 furnacePress
+#div r1 r1 rConst
+min r1 r1 1000
+sb furnace SettingOutput r1
+# Fill
+s midPump On r2
+# PV=nRT
+# V=nRT/P
+mul r2 r2 r0
+l r1 midSensor Pressure
+div r2 r2 r1
+l r1 midSensor Temperature
+mul r2 r2 r1
+div r2 r2 2
+#div r2 r2 rConstB
+min r2 r2 1000
+s midPump Setting r2
+# Adjust Hot / Cold
+slt r1 r0 r4
+sgt r2 inMol r4
+and r0 r1 r2
+or r3 r3 r0
+sub r3 1 r3
+s db Setting r3
+s dr15 On r0
+mul r0 r0 volumeIn
+#div r2 r2 2
+div r0 r0 rConstB
+min r0 r0 1000
+s dr15 Setting r0
+
+end:
+yield
+j main
+
+emerg:
+s coldPump Setting 0
+s hotPump Setting 0
+s midPump Setting 0
+sb furnace SettingOutput 100
+j end

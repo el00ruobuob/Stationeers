@@ -1,0 +1,21 @@
+alias tank d0
+alias purgeO2 d1
+alias purgeH2 d2
+
+main:
+yield
+l r0 tank RatioOxygen
+l r1 tank RatioVolatiles
+
+sgt r2 r0 2
+sgt r3 r1 10
+and r2 r2 r3
+s purgeO2 On r2
+
+sgt r2 r0 5
+sgt r3 r1 5
+and r3 r2 r3
+s purgeH2 On r3
+
+
+j main
