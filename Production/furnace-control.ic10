@@ -4,43 +4,43 @@ alias hotPump d2
 alias hotSensor d3
 alias midPump d4
 alias midSensor d5
-
 define furnace 545937711
 define memory -851746783
-
+define lever 1220484876 # Block temp control
+alias currentMol r3
+alias targetMol r4
 alias inMol r5
-alias currentMol r6
-alias targetMol r7
+alias mode r6 # idle/vent/fillMed/fill
 alias targetTemp r8
 alias targetPress r9
 alias volumeIn r10
 alias inTemp r11
 alias inPress r12
 alias furnaceTemp r13
-alias furnacePress r14
-# r15 = dev 0/2 ; sensor 1/3
-
-define rConst 8.3144
-define rConstB 16.6288
-
-s coldPump Mode 0
-s hotPump Mode 1
+alias furnacePress r14 # r15 = dev 0/2 ; sensor 1/3
+s coldPump Mode 1
+s hotPump Mode 0
 s midPump Mode 0
+sb 1310794736 Setting 0
+move mode 0
 
 main:
-s coldPump On 0
-s hotPump On 0
-s midPump On 0
+s db Setting mode
+lb r0 lever Setting Average
+bnez r0 stop
+move r0 targetTemp # Backup Temp / Press
+move r1 targetPress
+yield
 
 lb targetTemp memory Setting Maximum
-# Pressure consign stored as negative
-lb targetPress memory Setting Minimum
+lb targetPress memory Setting Minimum # Press stored as neg.
 abs targetPress targetPress
 lb furnaceTemp furnace Temperature Average
-lb furnacePress furnace Pressure Average
-bgt furnacePress 58000 emerg
-# Check If hot or cold is needed
-sgtz r0 furnacePress
+max furnaceTemp furnaceTemp 1
+jal emerg
+bne r0 targetTemp main # Temp must be stable
+bne r1 targetPress main # Press must be stable
+sgtz r0 furnacePress # Check If hot or cold is needed
 l r1 midSensor Temperature
 select r0 r0 furnaceTemp r1
 slt r0 r0 targetTemp
@@ -48,76 +48,80 @@ select r15 r0 3 1
 l inTemp dr15 Temperature
 l inPress dr15 Pressure
 select r15 r0 2 0
-
-# targetMol = 1000 * targetPress / targetTemp
-mul r0 1000 targetPress
+mul r0 1000 targetPress # targetMol = 1000 * targetPress / targetTemp
 div targetMol r0 targetTemp
-
 mul r0 1000 furnacePress
 div currentMol r0 furnaceTemp
-
-# Calcul volumeIn=inTemp*currentMol*(furnaceTemp-
-# targetTemp)/(inPress*(targetTemp-inTemp))
-sub volumeIn furnaceTemp targetTemp
-mul volumeIn volumeIn currentMol
+sub volumeIn furnaceTemp targetTemp # Calcul volumeIn=inTemp*currentMol*(furnaceTemp-
+mul volumeIn volumeIn currentMol # targetTemp)/(inPress*(targetTemp-inTemp))
 mul volumeIn volumeIn inTemp
 div volumeIn volumeIn inPress
 sub r0 targetTemp inTemp
 div volumeIn volumeIn r0
-
 mul r0 volumeIn inPress
 div inMol r0 inTemp
-
-# Remplir de targetMol - (currentMol + inMol)
-sub r0 targetMol currentMol
+sub r0 targetMol currentMol # Remplir de targetMol - (currentMol + inMol)
 sub r0 r0 inMol
-mul r4 targetMol -0.01
+sap r4 furnaceTemp targetTemp 0.05 #new
+select r4 r4 -0.001 -0.000001 # new
+mul r4 targetMol r4 #was -0.001
 slt r1 r0 r4
 mul r4 r4 -1
 sgt r2 r0 r4
 or r3 r1 r2
 abs r0 r0
-# Vent
+brne mode 0 11 # Vent
 mul r1 r1 r0
 mul r1 r1 furnaceTemp
-div r1 r1 furnacePress
-#div r1 r1 rConst
-min r1 r1 1000
-sb furnace SettingOutput r1
-# Fill
+div r1 r1 furnacePress #div r1 r1 rConst
+min r11 r1 100
+max r11 r11 0
+sb furnace SettingOutput r11
+yield #select mode r11 0 1
+sub r1 r1 r11
+brgtz r1 -5
+move mode 1
+brne mode 1 17 # Fill
 s midPump On r2
-# PV=nRT
-# V=nRT/P
-mul r2 r2 r0
+mul r2 r0 1#r2 # PV=nRT V=nRT/P
 l r1 midSensor Pressure
 div r2 r2 r1
 l r1 midSensor Temperature
-mul r2 r2 r1
-div r2 r2 2
-#div r2 r2 rConstB
-min r2 r2 1000
-s midPump Setting r2
-# Adjust Hot / Cold
-slt r1 r0 r4
-sgt r2 inMol r4
-and r0 r1 r2
-or r3 r3 r0
+mul r2 r2 r1 #div r2 r2 rConstB
+min r12 r2 1000
+max r12 r12 0
+jal emerg
+s midPump Setting r12
+yield #select mode r12 1 2
+sub r2 r2 r12
+brgtz r2 -6
+s midPump On 0
+move mode 2
+j main
+bne mode 2 main # Adjust Hot / Cold
 sub r3 1 r3
-s db Setting r3
 s dr15 On r0
-mul r0 r0 volumeIn
-#div r2 r2 2
-div r0 r0 rConstB
-min r0 r0 1000
-s dr15 Setting r0
-
-end:
-yield
+mul r0 volumeIn 1#r0 #div r0 r0 6 #div r2 r2 2
+min r11 r0 1000
+max r11 r11 0
+jal emerg
+s dr15 Setting r11
+yield #select mode r0 2 0
+sub r0 r0 r11
+brgtz r0 -6
+s dr15 On 0
+move mode 0
 j main
 
 emerg:
+lb furnacePress furnace Pressure Average
+max furnacePress furnacePress 0.0001
+blt furnacePress 58000 ra
+sb furnace SettingOutput 100
+stop:
 s coldPump Setting 0
 s hotPump Setting 0
 s midPump Setting 0
-sb furnace SettingOutput 100
-j end
+move mode 0
+yield
+j main

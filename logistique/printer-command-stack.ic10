@@ -1,24 +1,35 @@
-alias print d0
-alias stacker d1
-alias reqIC d2
-alias forceButton d3
-alias prevExport r10
-alias importNeeded r11
-yield #main
-l r0 print RecipeHash
-sne r2 r0 r9 # Recipe has changed from prevHash
-l r1 print ExportCount
-slt r3 r1 prevExport # Export has been reset
-or r2 r2 r3 # Any of those previous too
-select importNeeded r2 0 importNeeded # Reset needs
-s print ClearMemory r2 # Needs a reset here
-move r9 r0 # Store prevHash
-move prevExport r1 # Backup ExportCount
-bgtz importNeeded 89
-l r0 print Activate
-l r1 forceButton Setting
-or r0 r0 r1 # Check materials when (up to) printing
-beqz r0 89
+move sp 14
+push HASH("Copper")
+push HASH("Gold")
+push HASH("Iron")
+push HASH("Lead")
+push HASH("Nickel")
+push HASH("Silicon")
+push HASH("Silver")
+push 0
+push HASH("Constantan")
+push HASH("Electrum")
+push HASH("Invar")
+push HASH("Solder")
+push HASH("Steel")
+push 0
+push HASH("Astroloy")
+push HASH("Hastelloy")
+push HASH("Inconel")
+push HASH("Stellite")
+push HASH("Waspaloy")
+# sp = 33
+
+
+move sp 33
+pop r10
+breqz r10 -1
+lr r7 print Recipe r10
+lr r6 print Contents r10
+mul r8 sp 10000
+bnezal r7 evaluate
+brgt sp 14 -6
+
 lr r7 print Recipe HASH("Copper")
 lr r6 print Contents HASH("Copper")
 move r8 140000
@@ -86,43 +97,3 @@ bnezal r7 evaluate
 lr r7 print Recipe HASH("Waspaloy")
 lr r6 print Contents HASH("Waspaloy")
 move r8 320000
-bnezal r7 evaluate
-l r0 print ImportCount #End Counter reseted by Qty
-beqz r0 6
-beq r0 importNeeded reactivate # All is received
-j 6
-evaluate:
-l r0 stacker Setting # How much to print
-l r1 print ExportCount # How much printed yet
-sub r0 r0 r1 # Left to print
-mul r7 r7 r0 # Material needed for LtP
-sub r7 r7 r6 # Material missing for LtP
-add r7 r7 100 # Add some marging for next print
-blez r7 ra # If enough material, next
-ceil r7 r7
-mul r7 r7 10000000000 # Make room for IRMSF
-add r0 r8 r7 # Concatenate ItemShort value & Qty
-add r0 r0 5000101 #Lathe IRMSF
-div r1 r7 500 #Count imports expected
-ceil r1 r1
-add importNeeded importNeeded r1 # Total import expected
-add r2 r0 1 # Prepare Syn-Ack
-add r3 r2 1 # Prepare Ack
-yield
-l r1 reqIC Setting
-brnez r1 -2 # wait for reqIC available
-s reqIC Setting r0 # Set reqIC with Syn
-yield
-l r1 reqIC Setting
-breq r1 r0 -2 # Wait for change
-brne r1 r2 -7 # Wait for Syn-Ack or restart
-s reqIC Setting r3 # Set Ack
-j ra
-reactivate:
-move importNeeded 0
-l r0 print Activate
-bnez r0 6 # Do not reactivate when printing
-s print On 1
-yield
-s print Activate 1
-j 6

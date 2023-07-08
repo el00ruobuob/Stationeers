@@ -1,0 +1,120 @@
+alias sorter d0
+alias silo d1
+alias reqIC d2
+alias LMorderOres d3
+alias lcd d4
+
+#define item2 252561409 #Charcoal
+#define item 1724793494 #Coal
+#define itemShort 2 #Coal
+#define item -983091249 #Cobalt
+#define itemShort 3 #Cobalt
+#define item -707307845 #Copper
+#define itemShort 4 #Copper
+#define item -1348105509 #Gold
+#define itemShort 5 #Gold
+#define item 1758427767 #Iron
+#define itemShort 6 #Iron
+#define item -190236170 #Lead
+#define itemShort 7 #Lead
+#define item 1830218956 #Nickel
+#define itemShort 8 #Nickel
+#define item 1103972403 #Silicon
+#define itemShort 9 #Silicon
+#define item -916518678 #Silver
+#define itemShort 10 #Silver
+#define item -1516581844 #Uranium
+#define itemShort 11 #Uranium
+#define item -831480639 #Biomass
+#define itemShort 12 #Biomass
+
+define stackSize 400
+define threshold 10
+
+alias rVal r9
+alias rQty r10 #4
+alias rInf r11
+alias rDev r12
+alias rMat r13
+alias rStat r14 #1
+alias rFlag r15
+
+s silo On 1 #Silo
+s silo Mode 1
+sb -2020231820 On 1 # stacker Left
+sb 1585641623 On 1 # stacker Right
+sb -2020231820 Setting stackSize # stacker Left
+sb 1585641623 Setting stackSize # stacker Right
+s sorter On 1
+s sorter Mode 2
+
+main:
+yield
+ls r0 sorter 0 OccupantHash
+seqz r2 r0
+#seq r1 r0 item2 # For double item
+seq r0 r0 item
+#or r0 r0 r1 # Like charcoal and coal
+sub r0 r0 r2
+s sorter Output r0 # End of sorting
+l rVal reqIC Setting # Begining of request
+move r0 15 # Set loop init value
+move rQty rVal
+mod rr0 rQty 100 # Loop begin w/ Flag
+div rQty rQty 100 # Rest goes to Qty
+floor rQty rQty # next, Stat Mat Dev Inf Qty
+sub r0 r0 1
+brgt r0 10 -4 # Move to loop begin
+beqal rMat itemShort requested
+l r1 silo Quantity
+brdns lcd 2 # Display usage
+s lcd Setting r1 # Display usage
+lb r2 554524804 Setting Average # Load from dial
+mul r3 r2 threshold
+blt r1 r3 orderOres
+j main
+
+requested:
+bne rStat 2 ra # Request only when rStat == 2
+bnez rInf ra   # && rInf == 0
+add r3 rVal 1 # Set Ack and wait for feedback
+s reqIC Setting r3
+add r3 r3 1
+l r4 reqIC Setting
+breqz r4 2
+brne r4 r3 -2
+div r0 rQty stackSize
+ceil r0 r0
+l r1 silo Quantity
+slt r2 r1 r0
+select r2 r2 700 100 # Prepare rStat Update
+add rVal rVal r2
+bne r2 100 ra
+bgtz r0 export
+j ra
+
+export:
+s silo Open 1
+yield
+s silo Open 0
+sleep 2
+sub r0 r0 1
+bgtz r0 export
+add r3 rVal 1      # Set updated rVal, wait
+l r4 reqIC Setting # for SynAck & Ack
+brnez r4 -1
+s reqIC Setting rVal
+l r4 reqIC Setting
+breq r4 rVal -1
+brne r4 r3 -4
+add r3 r4 1
+s reqIC Setting r3
+j ra
+
+orderOres:
+l r0 LMorderOres Setting
+bnez r0 main
+lb r0 1155865682 Quantity Maximum #Silo
+bgt r0 500 main
+s LMorderOres Setting 1
+j main

@@ -1,20 +1,16 @@
-alias SortOre d2
+alias SortOre d0
 
 s SortOre Mode 2
+s SortOre On 1
 
 main:
-
-jal fSortOre
-
 yield
-j main
 
-fSortOre:
 ls r0 SortOre 0 Quantity
-beqz r0 ra
+beqz r0 main
 ls r0 SortOre 0 Class
 s db Setting r0
 seq r0 r0 19 # Check if ingots
-s SortOre Output r0 # Ores to main(0) ingots to alt(1) 
+s SortOre Output r0 # ingots to alt(1) Ores to main(0) 
 sleep 2
-j ra
+j main

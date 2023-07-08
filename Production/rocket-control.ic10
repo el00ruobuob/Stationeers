@@ -1,0 +1,62 @@
+alias automatedThing d0
+alias Silo d1
+alias Mining d2
+alias button d3
+alias fuelTank d4
+#define miningOre -2027419821
+#define miningJunk -1446002463
+#define miningIce 74521920
+#define silo 906210602
+#define gasMining 1969722301
+
+alias currentMode r5
+alias collectable r6
+alias fuelCost r7
+alias currentFuel r8
+alias currentQuantity r9
+alias buttonPressed r10
+
+main:
+l currentMode automatedThing Mode
+seqz r14 currentMode
+s Silo Open r14
+beq currentMode 0 end
+bltal currentMode 5 checkFuel
+bltal currentMode 5 checkCargo
+beqal currentMode 4 startMining
+end:
+l buttonPressed button Setting
+mul r14 3 buttonPressed
+select r15 currentMode 5 1
+mul r15 r15 buttonPressed
+s automatedThing Activate r14
+s automatedThing Activate r15
+yield
+j main
+
+checkFuel:
+l currentFuel fuelTank Quantity
+l fuelCost automatedThing ReturnFuelCost
+mul fuelCost fuelCost 3
+blt fuelCost currentFuel ra
+s automatedThing Activate 3
+s automatedThing Activate 5
+j end
+
+checkCargo:
+l currentQuantity Silo Quantity
+blt currentQuantity 300 ra
+s automatedThing Activate 3
+s automatedThing Activate 5
+j end
+
+startMining:
+l collectable automatedThing CollectableGoods
+beqz collectable travel
+s Mining Activate 1
+j end
+
+travel:
+s automatedThing Activate 3
+s automatedThing Activate 2
+j end

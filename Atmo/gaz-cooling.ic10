@@ -49,6 +49,8 @@ slt r0 coolingPress 1000
 and coolingPumpOn coolingPumpOn r0
 slt r0 coolingPress 100
 or coolingPumpOn coolingPumpOn r0
+slt r0 coolingTemp 288
+or coolingPumpOn coolingPumpOn r0
 sge r0 filteringPress 100
 and coolingPumpOn coolingPumpOn r0
 sub r0 1 filterPumpOn
@@ -66,6 +68,8 @@ s DVcooling On coolingDVon
 
 # Filtration Stockage
 slt filterDVon coolingTemp 298
+sgt r0 coolingTemp 288
+and filterDVon filterDVon r0
 sgt r0 coolingPress 10
 and filterDVon filterDVon r0
 sub r0 1 coolingDVon

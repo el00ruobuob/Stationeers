@@ -1,0 +1,66 @@
+alias vending d0
+#define vendingRef -1867508561 #Vending_Seed
+define led -815193061 #LED_Qty
+
+alias slot r9
+
+main:
+move sp 0
+push 0
+push -654756733 #SeedBag_Wheet
+push 0
+push -1922066841 #SeedBag_Tomato
+push 0
+push 488360169 #SeedBag_Switchgrass
+push 0
+push 1783004244 #SeedBag_Soybean
+push 0
+push -1691151239 #SeedBag_Rice
+push 0
+push 1423199840 #SeedBag_Pumpkin
+push 0
+push 1005571172 #SeedBag_Potato
+push 0
+push 311593418 #SeedBag_Mushroom
+push 0
+push -1990600883 #SeedBag_Fern
+push 0
+push -1290755415 #SeedBag_Corn
+# sp = 20 # Now read content and write quantities
+move slot 1
+loopSlot:
+add slot slot 1
+ls r0 vending slot Occupied
+beqz r0 endLoopStack
+ls r10 vending slot OccupantHash
+ls r11 vending slot Quantity
+move sp 20
+loopStack:
+beq sp 0 endLoopStack
+pop r0 #hash
+pop r1 #Qty
+bne r0 r10 loopStack
+add r1 r1 r11
+push r1
+endLoopStack:
+blt slot 101 loopSlot
+# Read Quantities and display result
+move sp 20
+loopDisplay:
+beq sp 0 endLoopDisplay
+pop r0 #hash
+pop r1 #Qty
+beqz r1 loopDisplay
+s db Setting r0
+sbn led HASH("LED_Qty") Setting r1
+sgt r2 r1 100
+sgt r3 r1 80
+add r3 2 r3
+add r3 r3 r2
+sbn led HASH("LED_Qty") Color r3
+breqz r2 2
+s vending RequestHash r0
+sleep 2
+j loopDisplay
+endLoopDisplay:
+j main

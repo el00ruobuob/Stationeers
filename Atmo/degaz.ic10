@@ -23,7 +23,7 @@ lb furnTemp furnace Temperature Minimum
 sgt purgeOn furnPress 500
 slt r0 furnTemp 420
 and purgeOn r0 purgeOn
-slt warmerOn furnTemp 400
+slt warmerOn furnTemp 390
 #sub warmerSet 400 furnTemp
 #mul warmerSet warmerSet 50
 #min warmerSet warmerSet 100

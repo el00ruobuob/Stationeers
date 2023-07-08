@@ -1,0 +1,53 @@
+alias pumpN d0
+alias pumpP d1
+alias sensor d2
+alias rad d3
+alias tank d4
+alias sensorP d5
+
+define filterH2 -348054045
+define weather 1997212478
+
+s pumpP Setting 100
+
+main:
+yield
+lb r1 weather Mode 0
+seq r0 r1 0
+breqz r1 4
+lb r1 weather NextWeatherEventTime 0
+brgt r1 10 2
+move r0 0
+lb r1 filterH2 TemperatureInput Average
+l r2 sensor Temperature
+sgt r1 r2 r1
+and r0 r0 r1
+s rad Open r0
+
+slt r3 r1 450
+l r4 pumpN On
+seqz r4 r4
+and r3 r3 r4
+l r4 sensor Pressure
+slt r4 r4 2000
+and r3 r3 r4
+l r4 sensorP Pressure
+sgt r4 r4 100
+and r3 r3 r4
+s pumpP On r3
+
+seqz r3 r3
+slt r4 r1 410
+and r3 r3 r4
+l r4 sensor Pressure
+sgt r4 r4 100
+and r3 r3 r4
+l r4 tank Pressure
+slt r4 r4 10000
+and r3 r3 r4
+l r4 tank Temperature
+slt r4 r4 303
+and r3 r3 r4
+s pumpN On r3
+
+j main

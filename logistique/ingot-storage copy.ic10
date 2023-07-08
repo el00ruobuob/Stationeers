@@ -37,52 +37,50 @@ define itemShort 21 #Copper
 #define item 156348098 #Waspaloy
 #define itemShort 44 #Waspaloy
 
+define stackSize 500
+
 alias rVal r9
-alias rMat r10
-alias rQty r11 #4
-alias rInf r12
-alias rStat r13 #1
-alias rFlag r14
+alias rQty r10 #4
+alias rInf r11
+alias rDev r12
+alias rMat r13
+alias rStat r14 #1
+alias rFlag r15
 
 s silo On 1 #Silo
 s silo Mode 1
 sb -2020231820 On 1 # stacker Left
 sb 1585641623 On 1 # stacker Right
-sb -2020231820 Setting 500 # stacker Left
-sb 1585641623 Setting 500 # stacker Right
+sb -2020231820 Setting stackSize # stacker Left
+sb 1585641623 Setting stackSize # stacker Right
 s sorter On 1
 s sorter Mode 2
 
 main:
+yield
 ls r0 sorter 0 OccupantHash
 seqz r1 r0
-seq r0 r0 item
+seq r0 r0 item # No double item here
 sub r0 r0 r1
-s sorter Output r0
-l rVal reqIC Setting
-mod rFlag rVal 10 # Demux rVal to get rFlag,
-div r0 rVal 10    # rStat, rInf & rQty
-floor r0 r0
-mod rStat r0 10
-div r0 r0 100
-floor r0 r0
-mod rInf r0 10
-div r0 r0 10
-floor r0 r0
-mod rQty r0 10000
-div r0 r0 10000
-floor rMat r0
+s sorter Output r0 # End of sorting
+l rVal reqIC Setting # Begining of request
+move r0 15 # Set loop init value
+move rQty rVal
+mod rr0 rQty 100 # Loop begin w/ Flag
+div rQty rQty 100 # Rest goes to Qty
+floor rQty rQty #  next, Stat Mat Dev Inf Qty
+sub r0 r0 1
+brgt r0 10 -4 # Move to loop begin
 beqal rMat itemShort requested
-l r0 IngotLowMem Setting
+#l r0 IngotLowMem Setting
 l r1 silo Quantity
 brdns lcd 2
 s lcd Setting r1
-mul r1 r1 100
-add r1 r1 itemShort
-bltal r1 r0 setIngotLow
-mod r0 r0 100
-beqal r0 itemShort setIngotLow
-yield
+#mul r1 r1 100
+#add r1 r1 itemShort
+#bltal r1 r0 setIngotLow
+#mod r0 r0 100
+#beqal r0 itemShort setIngotLow
 j main
 
 requested:
@@ -94,13 +92,13 @@ add r3 r3 1
 l r4 reqIC Setting
 breqz r4 2
 brne r4 r3 -2
-div r0 rQty 500
+div r0 rQty stackSize
 ceil r0 r0
 l r1 silo Quantity
 slt r2 r1 r0
-select r2 r2 70 10 # Prepare rStat Update
+select r2 r2 700 100 # Prepare rStat Update
 add rVal rVal r2
-bne r2 10 ra
+bne r2 100 ra
 bgtz r0 export
 j ra
 

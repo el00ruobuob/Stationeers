@@ -1,0 +1,42 @@
+alias statsReader d0
+alias powerRatio d1
+alias powerValue d2
+
+s powerRatio Mode 1
+s powerValue Mode 2
+
+main:
+yield
+
+l r0 d0:0 Channel0
+s db Setting r0
+mod r2 r0 100000
+div r0 r0 100000
+round r0 r0
+mod r1 r0 100000
+div r0 r0 100000
+round r0 r0
+
+div r0 r0 1000
+slt r10 r0 0.5
+slt r11 r0 0.2
+add r10 2 r10
+add r10 r10 r11
+s powerRatio Color r10
+s powerRatio Setting r0
+
+sub r1 r1 r2
+mul r1 r1 10
+slt r10 r1 5000
+slt r11 r1 -5000
+add r10 2 r10
+add r10 r10 r11
+s powerValue Color r10
+brgt r1 -10000 4
+div r1 r1 100
+round r1 r1
+mul r1 r1 100
+s powerValue Setting r1
+
+
+j main

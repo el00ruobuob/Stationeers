@@ -1,0 +1,23 @@
+define battery -1388288459
+
+main:
+yield
+
+lb r0 battery Ratio Average
+mul r0 r0 1000
+round r0 r0
+lb r1 battery PowerPotential Average
+div r1 r1 10
+round r1 r1
+lb r2 battery PowerActual Average
+div r2 r2 10
+round r2 r2
+mul r0 r0 100000
+add r0 r0 r1
+mul r0 r0 100000
+add r0 r0 r2
+
+s db Setting r0
+s db:0 Channel0 r0
+
+j main

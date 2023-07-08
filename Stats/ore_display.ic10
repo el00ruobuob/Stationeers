@@ -1,0 +1,78 @@
+alias statsReaderMem d0
+alias lcd d1
+
+alias prevVal r10
+alias tempo r11
+alias currentDisplay r12
+
+# Data 2=Coal - 12=Biomass
+#sp = 2
+move sp 2
+push 0
+push 1724793494 #Coal
+push 0
+push -983091249 #Cobalt
+push 0
+push -707307845 #Copper
+push 0
+push -1348105509 #Gold
+push 0
+push 1758427767 #Iron
+push 0
+push -190236170 #Lead
+push 0
+push 1830218956 #Nickel
+push 0
+push 1103972403 #Silicon
+push 0
+push -916518678 #Silver
+push 0
+push -1516581844 #Uranium
+push 0
+push -831480639 #Biomass
+#sp = 24
+
+move currentDisplay 4
+move tempo 0
+
+main:
+yield
+add tempo tempo 0.5
+l r0 d0:0 Channel2
+bneal r0 prevVal store
+
+bgt tempo 2 display
+
+j main
+
+store:
+move prevVal r0
+mod r1 r0 1000000
+div r0 r0 1000000
+round r0 r0
+move sp r0
+push r1
+j ra
+
+display:
+move tempo 0
+move sp currentDisplay
+pop r0
+pop r1
+div r1 r1 1000
+s db Setting r0
+s lcd Setting r1
+slt r1 r0 2
+slt r2 r0 5
+sgt r3 r0 160
+sgt r4 r0 200
+add r1 r1 2
+add r1 r1 r2
+add r1 r1 r3
+add r1 r1 r4
+s lcd Color r1
+
+add currentDisplay currentDisplay 4
+ble currentDisplay 24 main
+move currentDisplay 4
+j main

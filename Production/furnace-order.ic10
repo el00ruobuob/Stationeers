@@ -1,0 +1,76 @@
+move sp 0
+push 0
+move sp 13
+push 1
+push 2
+push 3
+push 4
+push 5
+push 6
+push 7
+move sp 21
+push 8
+push 9
+push 10
+push 11
+push 12
+move sp 27
+push 13
+push 14
+push 15
+push 16
+push 17
+
+alias dialSelect d0
+alias dialQty d1
+alias button d2
+alias furnace d3
+
+alias rVal r12
+alias rQty r13
+alias rMat r14
+alias rFlag r15
+
+s db Setting 0
+
+main:
+yield
+
+l rVal db Setting
+beqz rVal main
+move r0 15 # Start Demux QQQMMFF
+move rQty rVal
+mod rr0 rQty 100
+div rQty rQty 100
+floor rQty rQty
+sub r0 r0 1
+brgt r0 13 -4
+
+add r11 rVal 1
+add r10 r11 1
+
+s db Setting r11
+yield
+l r0 db Setting
+brne r0 r10 -2
+
+move sp rMat
+pop rMat
+
+s dialSelect Setting rMat
+s dialQty Setting rQty
+s button Open 1
+
+move r5 0
+yield
+l r0 furnace Reagents
+brgtz r5 4
+sgtz r0 r0
+add r5 r5 r0
+jr -5
+brnez r0 -6
+move r5 0
+s db Setting 0
+
+
+j main

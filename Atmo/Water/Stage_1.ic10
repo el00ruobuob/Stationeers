@@ -1,0 +1,60 @@
+alias pumpL d0
+#alias purge d1
+alias raD1 d1
+
+define filterH2 -348054045
+define mixer 2104106366
+define DLsensor 1076425094
+define radExt -566775170
+
+define combustor 1840108251
+define weather 1997212478
+
+#s purge Setting 100
+
+main:
+yield
+lb r0 combustor RatioVolatiles Minimum
+lb r1 combustor RatioOxygen Minimum
+sgtz r0 r0
+sgtz r1 r1
+and r0 r0 r1
+sb combustor Mode r0
+
+l r1 db PressureInput
+slt r1 r1 100
+#or r2 r0 r1
+#seqz r2 r2
+#s purge On r2
+seqz r0 r0
+and r1 r0 r1
+l r2 db PressureOutput
+slt r2 r2 10000
+and r1 r1 r2
+lb r2 combustor Pressure Maximum
+slt r2 r2 1000
+and r1 r1 r2
+lb r2 filterH2 PressureOutput Average
+sgt r2 r2 1000
+and r1 r1 r2
+l r2 pumpL On
+seqz r2 r2
+and r1 r1 r2
+sb mixer On r1
+
+lb r0 DLsensor Horizontal Average
+sb radExt Horizontal r0
+
+lb r1 weather Mode 0
+seq r0 r1 0
+breqz r1 4
+lb r1 weather NextWeatherEventTime 0
+brgt r1 10 2
+move r0 0
+l r1 db TemperatureOutput
+lb r2 filterH2 TemperatureInput Average
+sgt r1 r1 r2
+and r0 r0 r1
+s raD1 Open r0
+
+j main

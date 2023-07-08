@@ -1,0 +1,42 @@
+alias batBatch d0
+alias valve d1
+alias reqIC d2
+
+define gen 813146305
+
+main:
+yield
+l r0 batBatch Setting
+slt r0 r0 0.5
+sb gen On r0
+
+ls r0 valve 0 Occupied
+l r1 valve Setting
+snez r1 r1
+mul r1 r1 2
+add r0 r0 r1
+s db Setting r0
+beq r0 3 main
+beq r0 2 callItem
+beqz r0 main
+s valve Setting 50
+s valve Open 1
+j main
+
+callItem:
+move r5 40000008020101 #QQQQIIRRMMSSFF
+add r6 r5 1 # Prepare Syn-Ack
+yield
+l r1 reqIC Setting
+brnez r1 -2 # Wait for reqIC available
+s reqIC Setting r5
+yield
+l r1 reqIC Setting
+breq r1 r5 -2 # wait for reqIC to get changed
+brne r1 r6 -7 # wait for Syn-Ack or restart
+add r6 r6 1 # Prepare Ack
+s reqIC Setting r6 # Send Ack
+s valve Setting 0
+s valve Open 0
+sleep 30
+j main

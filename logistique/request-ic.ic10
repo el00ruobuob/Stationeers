@@ -1,15 +1,16 @@
 alias sSP r4
+alias tSP r5
 alias rVal r6
 alias rValPrev r7
-alias rMat r8
-alias rInf r9
-alias rDev r10
+alias rInf r8
+alias rDev r9
+alias rMat r10
 alias rStat r11
 alias rFlag r12
-alias sMat r13
-alias sDev r14
+alias sDev r13
+alias sMat r14
 alias sStat r15
-move r5 0
+move tSP 0
 main:
 yield
 move sSP 0
@@ -32,23 +33,19 @@ beqal sSP -1 vAck
 move rValPrev rVal # Backup rVal for comparision
 j main
 demux:
-mod rr0 r1 10 # Flag
-move r3 3 # Loop
-brlt r0 13 2
-breq r3 3 2 # overwrite Flag
-sub r0 r0 1
-div r1 r1 10
-mod rr0 r1 10
-floor rr0 rr0 # Stat Dev Inf
+sle r3 r0 12 # Set loop count increment
+add r3 r3 3 # Loop count 3 or 4
+mod rr0 r1 100 # Flag
+brge r0 13 2 # overwrite Flag by skipping sub
+sub r0 r0 1 # Loop begin
+div r1 r1 100
+floor r1 r1
+mod rr0 r1 100 # Stat Mat Dev Inf
 sub r3 r3 1
-brgtz r3 -7
-breq r0 13 2 # Overwrite Inf
-sub r0 r0 1
-div rr0 r1 100000
-floor rr0 rr0 # Mat
+brgtz r3 -5 # to loop begin
 j ra
 sFind:
-move sp r5 # Start at top of Stack
+move sp tSP # Start at top of Stack
 move r2 ra # Backup ra
 move sSP -1 # Default sSP to -1
 findLoop:
@@ -68,34 +65,34 @@ add sSP sp 1
 j r2
 sAdd:
 move r0 rVal
-add r5 r5 1
+add tSP tSP 1
 move sp 0
 addLoop:
 move r1 r0
 add sp sp 1
 pop r0
 push r1
-bne r5 sp addLoop
+bne tSP sp addLoop
 add r0 rVal 1
 add r1 r0 1
 s db Setting r0
 yield
 l r0 db Setting
 brne r0 r1 -2
-add rVal rVal 9
+add rVal rVal 99
 move sSP -1
 j ra
 sUpdate:
 move sp sSP
 sub sp sp 1
-mul r0 rInf 1000
+mul r0 rInf 100000000
 sub r0 rVal r0 # Remove Inf before storing
 push r0
 move sSP -1
 j ra
 sDelete:
 beq sSP -1 ra
-move sp r5
+move sp tSP
 pop r0
 push 0
 jr 5
@@ -106,14 +103,14 @@ push r1
 sub sp sp 1
 bge sp sSP deleteLoop
 move sSP -1
-sub r5 r5 1
+sub tSP tSP 1
 j ra
 vDisplay:
-add rVal rVal 100 # Defaults to None Device
+add rVal rVal 1000000 # Defaults to None Device
 breq sSP -1 6
 move sp sSP
 pop rVal
-mul r0 rInf 1000 # Add Inf to the stored value
+mul r0 rInf 100000000 # Add Inf to the stored value
 add rVal rVal r0
 move sSP -1
 j ra

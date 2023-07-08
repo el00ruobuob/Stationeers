@@ -1,0 +1,112 @@
+alias doorInt d0
+alias doorExt d1
+#alias psInt d2
+#alias psExt d3
+alias ventInt d4
+alias ventExt d5
+
+define occupancy 322782515
+define prox 568800213
+define sensor -1252983604
+
+alias state r15
+# 0 Error, 1 Int, 2 I2E, 3 Ext, 4 E2I
+alias hasMoved r14
+
+s db Setting 0
+s doorInt Lock 1
+s doorExt Lock 1
+s ventInt Lock 1
+s ventExt Lock 1
+
+move hasMoved 1
+main:
+yield
+l r0 doorInt Open
+l r1 doorExt Open
+l r2 ventExt Mode
+and r3 r0 r1
+move state 0
+bnez r3 endInit
+mul r3 r1 3
+add r3 r3 r0
+move state r3
+bnez state endInit
+or r3 r0 r1
+seqz r3 r3
+add r3 r2 r3
+mul r3 r3 2
+move state r3
+endInit:
+s db Setting state
+
+lbn r0 occupancy HASH("OS Int") Activate 0
+snan r13 r0
+breqz r13 2
+lbn r0 prox HASH("PS Int") Activate 0
+lbn r1 occupancy HASH("OS Ext") Activate 0
+snan r13 r1
+breqz r13 2
+lbn r1 prox HASH("PS Ext") Activate 0
+lbn r2 occupancy HASH("OS SAS") Activate 0
+
+or r7 r0 r1
+max hasMoved hasMoved r7
+seqz r7 r7
+
+seq r3 state 3
+and r3 r3 r0
+seqz r8 r2
+and r3 r3 r8
+bnez r3 E2I
+#bnez r3 main
+seq r4 state 1
+and r4 r4 r1
+and r4 r4 r8
+s db Setting state
+bnez r4 I2E
+#bnez r4 main
+seq r5 state 1
+and r5 r5 r2
+and r5 r5 hasMoved
+and r5 r5 r7
+bnez r5 I2E
+seq r6 state 3
+and r6 r6 r2
+and r6 r6 hasMoved
+and r6 r6 r7
+bnez r6 E2I
+or r5 r5 r6
+beqz r5 main
+
+j main
+
+I2E:
+s doorInt Open 0
+yield
+s ventInt Mode 1
+s ventExt Mode 0
+s ventInt On 1
+lb r0 sensor Pressure 0
+yield
+yield
+brgtz r0 -3
+s ventInt On 0
+s doorExt Open 1
+move hasMoved 0
+j main
+
+E2I:
+s doorExt Open 0
+yield
+s ventExt Mode 1
+s ventInt Mode 0
+s ventExt On 1
+lb r0 sensor Pressure 0
+yield
+yield
+brgtz r0 -3
+s ventExt On 0
+s doorInt Open 1
+move hasMoved 0
+j main

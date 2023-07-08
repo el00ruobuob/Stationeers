@@ -1,4 +1,5 @@
-move sp 1
+push 0
+push 252561409 #Charcoal
 push 1724793494 #Coal
 push -983091249 #Cobalt
 push -707307845 #Copper
@@ -8,7 +9,9 @@ push -190236170 #Lead
 push 1830218956 #Nickel
 push 1103972403 #Silicon
 push -916518678 #Silver
-move sp 21
+push -1516581844 #Uranium
+push -831480639 #Biomass
+push 0
 push -404336834 #Copper
 push 226410516 #Gold
 push -1301215609 #Iron
@@ -16,14 +19,15 @@ push 2134647745 #Lead
 push -1406385572 #Nickel
 push -290196476 #Silicon
 push -929742000 #Silver
-move sp 31
+push 0
 push 1058547521 #Constantan
 push 502280180 #Electrum
 push -297990285 #Invar
 push -82508479 #Solder
 push -654790771 #Steel
-move sp 41
+push 0
 push 412924554 #Astrolloy
+push 1579842814 #Hastelloy
 push -787796599 #Inconel
 push -1897868623 #Stellite
 push 156348098 #Waspaloy
@@ -38,10 +42,10 @@ alias sQty r6
 alias sMat r7
 alias sHash r8
 alias rVal r9
-alias rMat r10
-alias rQty r11
-alias rInf r12
-alias rDev r13
+alias rQty r10
+alias rInf r11
+alias rDev r12
+alias rMat r13
 alias rStat r14
 alias rFlag r15
 
@@ -59,11 +63,13 @@ ls sHash Stacker 2 OccupantHash
 move sp 45 # Get Material
 pop r0
 brne r0 sHash -1 # Loop around Stack to find hash
+seq r0 sp 1
+add sp sp r0 # Handle charcoal as coal
 move sMat sp
-mul r0 sMat 100000000 # Get ReqIC Data
-mul r1 infID 1000 # Prepare Inf in reqVal
+mul r0 sMat 10000 # Get ReqIC Data
+mul r1 infID 100000000 # Prepare Inf in reqVal
 add r0 r0 r1 # Add Inf value
-add r0 r0 31 # Set Stat & Flag to Syn
+add r0 r0 301 # Set Stat & Flag to Syn
 jal startCom
 sgt r1 rDev 1 # Prepare deCount when dev != None
 bnezal r1 deCount
@@ -78,7 +84,7 @@ j main
 
 updateData:
 sub r0 4 rStat
-mul r0 r0 10
+mul r0 r0 100
 sub r0 r0 rFlag
 add r0 r0 1
 add r0 rVal r0
@@ -100,20 +106,17 @@ j r2
 
 demux: # new
 move r3 15 # Prepare to get from Flag to Inf
-move r0 rVal
-mod rr3 r0 10
-div r0 r0 10
-floor r0 r0
+move rQty rVal
+mod rr3 rQty 100
+div rQty rQty 100
+floor rQty rQty
 sub r3 r3 1
-brgt r3 11 -4
-mod rQty r0 10000
-div r0 r0 10000
-floor rMat r0
+brgt r3 10 -4
 j ra
 
 deCount:
-mul r0 rDev 50
-add r0 r0 50
+mul r0 rDev 32 # max 15 dev
+sub r0 r0 64 # rDev 3 - 17
 add sp sMat r0
 pop r0
 select r0 r0 r0 rQty
