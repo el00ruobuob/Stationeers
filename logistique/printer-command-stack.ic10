@@ -1,0 +1,99 @@
+move sp 14
+push HASH("Copper")
+push HASH("Gold")
+push HASH("Iron")
+push HASH("Lead")
+push HASH("Nickel")
+push HASH("Silicon")
+push HASH("Silver")
+push 0
+push HASH("Constantan")
+push HASH("Electrum")
+push HASH("Invar")
+push HASH("Solder")
+push HASH("Steel")
+push 0
+push HASH("Astroloy")
+push HASH("Hastelloy")
+push HASH("Inconel")
+push HASH("Stellite")
+push HASH("Waspaloy")
+# sp = 33
+
+
+move sp 33
+pop r10
+breqz r10 -1
+lr r7 print Recipe r10
+lr r6 print Contents r10
+mul r8 sp 10000
+bnezal r7 evaluate
+brgt sp 14 -6
+
+lr r7 print Recipe HASH("Copper")
+lr r6 print Contents HASH("Copper")
+move r8 140000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Gold")
+lr r6 print Contents HASH("Gold")
+move r8 150000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Iron")
+lr r6 print Contents HASH("Iron")
+move r8 160000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Lead")
+lr r6 print Contents HASH("Lead")
+move r8 170000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Nickel")
+lr r6 print Contents HASH("Nickel")
+move r8 180000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Silicon")
+lr r6 print Contents HASH("Silicon")
+move r8 190000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Silver")
+lr r6 print Contents HASH("Silver")
+move r8 200000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Constantan")
+lr r6 print Contents HASH("Constantan")
+move r8 220000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Electrum")
+lr r6 print Contents HASH("Electrum")
+move r8 230000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Invar")
+lr r6 print Contents HASH("Invar")
+move r8 240000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Solder")
+lr r6 print Contents HASH("Solder")
+move r8 250000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Steel")
+lr r6 print Contents HASH("Steel")
+move r8 260000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Astroloy")
+lr r6 print Contents HASH("Astroloy")
+move r8 280000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Hastelloy")
+lr r6 print Contents HASH("Hastelloy")
+move r8 290000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Inconel")
+lr r6 print Contents HASH("Inconel")
+move r8 300000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Stellite")
+lr r6 print Contents HASH("Stellite")
+move r8 310000
+bnezal r7 evaluate
+lr r7 print Recipe HASH("Waspaloy")
+lr r6 print Contents HASH("Waspaloy")
+move r8 320000

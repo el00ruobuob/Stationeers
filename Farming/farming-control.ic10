@@ -1,0 +1,80 @@
+alias occupied d0
+alias seeding d1
+alias mature d2
+alias stacker d3
+alias sorter d4
+alias sorterSurplus d5
+
+alias blocked r11
+alias pause r12
+
+define HARVIE 958056199
+define VENDING -1577831321
+define MIRROR 2096189278
+
+s sorter Mode 2
+s sorterSurplus Mode 2
+
+sb HARVIE On 1
+sb HARVIE Activate 0
+
+move pause 0
+
+main:
+s db Setting pause
+#sb VENDING ClearMemory 1
+
+max pause pause 0
+yield
+
+l r1 seeding Setting
+add pause pause r1
+l r1 mature Setting
+add pause pause r1
+brlt pause 60 5
+sb HARVIE Activate 0
+yield
+sb HARVIE Harvest 1
+move pause 0
+
+lb r5 VENDING Quantity Average
+brge r5 80 9
+l r1 occupied Setting
+sub r1 1 r1
+add pause pause r1
+brlt pause 60 5
+sb HARVIE Activate 0
+yield
+sb HARVIE Plant 1
+move pause 0
+
+#Sorting
+ls r0 sorter 0 Occupied
+breqz r0 5
+ls r1 sorter 0 Damage
+sgtz r1 r1
+s sorter Output r1
+
+ls r10 stacker 1 Occupied
+breqz r10 4
+yield
+ls r10 stacker 1 Occupied
+
+ls r0 sorterSurplus 0 Occupied
+breqz r0 3
+s sorterSurplus Output r10
+
+#Decayed
+sb VENDING RequestHash 1531087544
+#Call
+lb r6 MIRROR Setting Average
+beqz r6 main
+lb r7 VENDING ExportCount Average
+sb VENDING RequestHash r6
+sleep 2
+lb r8 VENDING ExportCount Average
+sgt r7 r8 r7
+beqz r7 main
+sb MIRROR Setting 0
+
+j main

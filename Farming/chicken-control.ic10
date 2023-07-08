@@ -1,0 +1,85 @@
+alias sorterEgg d0
+alias vendingEgg d1
+alias sorterLB d2
+alias sorterSurplus d3
+alias VendingFert d4
+
+alias count r10
+
+define vent -1129453144
+#define vending -1577831321
+
+#sb vending On 1
+s sorterEgg On 1
+s sorterEgg Mode 2
+s sorterLB On 1
+s sorterLB Mode 2
+s sorterSurplus On 1
+s sorterSurplus Mode 2
+
+s vendingEgg On 1
+s VendingFert On 1
+
+move count 121
+
+main:
+yield
+sub count count 1
+max count count 0
+select count count count 121
+s db Setting count
+
+sle r0 count 90
+sgt r1 count 45
+sb vent Mode r1
+sb vent On r0
+brnez r1 2
+sb vent PressureExternal 50662
+
+ls r0 sorterEgg 0 Occupied
+beqz r0 endSortEgg
+ls r0 sorterEgg 0 OccupantHash
+sne r0 r0 -873909936
+s sorterEgg Output r0
+sleep 2
+sub count count 4
+endSortEgg:
+
+ls r0 sorterLB 0 Occupied
+beqz r0 endSortLB
+ls r0 sorterLB 0 OccupantHash
+sne r0 r0 -383972371
+lb r1 -1713470563 Quantity Sum
+sgt r1 r1 5
+or r0 r0 r1
+s sorterLB Output r0
+sleep 2
+sub count count 4
+endSortLB:
+
+ls r0 sorterSurplus 0 Occupied
+beqz r0 endSortSurplus
+ls r0 sorterSurplus 0 OccupantHash
+sne r0 r0 -383972371
+s sorterSurplus Output r0
+sleep 2
+sub count count 4
+endSortSurplus:
+
+l r0 vendingEgg Quantity
+blt r0 80 emptyEgg
+s vendingEgg RequestHash -873909936 #Egg
+yield
+sub count count 1
+emptyEgg:
+s vendingEgg RequestHash 1531087544 #Decayed
+
+l r0 VendingFert Quantity
+blt r0 80 emptyFert
+s VendingFert RequestHash -383972371 #Fertilized
+yield
+sub count count 1
+emptyFert:
+s VendingFert RequestHash 1531087544 #Decayed
+
+j main

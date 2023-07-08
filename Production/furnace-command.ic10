@@ -1,0 +1,123 @@
+alias ingotDial d0
+alias ingotQty d1
+alias startMelt d2
+alias pressMem d3
+alias tempMem d4
+alias reqIC d5
+
+alias targetQty r7 # was starting at r3
+alias ingotShort r8
+alias ingotHash r9
+alias lowTemp r10
+alias lowPress r11
+alias highTemp r12
+alias highPress r13
+alias itemShort r14
+alias itemQty r15
+
+define advFurnace 545937711
+define turboPump 1310794736
+define lever 1220484876 # Block temp control
+
+main:
+yield
+
+jal selector
+l r0 startMelt Setting
+mul r0 r0 targetQty
+bnezal r0 startFurn
+
+j main
+
+selector:
+l r0 ingotDial Setting
+add r0 r0 1
+move sp r0
+pop ingotShort
+move sp ingotShort
+pop ingotHash
+s db Setting ingotHash
+l targetQty ingotQty Setting
+j ra
+
+startFurn:
+s startMelt Open 0
+mul r0 ingotShort 10
+move sp r0
+move r0 9
+add r0 r0 1
+pop rr0
+brlt r0 13 -2
+startReq:
+add r0 r0 1 #14, 15, 16
+bgt r0 16 waitMelt
+pop itemShort
+breqz itemShort -3
+mul itemShort itemShort 10000
+pop itemQty
+mul itemQty itemQty targetQty
+mul itemQty itemQty 10000000000
+move r5 3000101 #RMMSSFF
+add r5 r5 itemShort
+add r5 r5 itemQty
+callItem:
+add r6 r5 1 # Prepare Syn-Ack
+yield
+l r1 reqIC Setting
+brnez r1 -2 # Wait for reqIC available
+s reqIC Setting r5
+yield
+l r1 reqIC Setting
+breq r1 r5 -2 # wait for reqIC to get changed
+brne r1 r6 -7 # wait for Syn-Ack or restart
+add r6 r6 1 # Prepare Ack
+s reqIC Setting r6 # Send Ack
+j startReq
+waitMelt:
+yield
+sb lever Open 0 # Allow temp control
+lb r0 advFurnace RecipeHash Average
+lb r1 advFurnace Reagents Average
+seq r0 r0 ingotHash # Expected Hash
+mul r5 targetQty 100 # Qty to check
+sgt r6 ingotShort 40
+select r6 r6 4 1 # Advanced alloys uses
+mul r5 r5 r6 # 4 times the Materials
+seq r1 r1 r5 # Expected Qty
+and r0 r0 r1 # Expected Hash / Qty
+lb r2 advFurnace Temperature Average
+lb r3 advFurnace Pressure Average
+sub r3 0 r3
+bnez r1 waitAlloy
+max r2 r2 450
+min r3 r3 -500
+s tempMem Setting r2
+s pressMem Setting r3
+beqz r1 waitMelt
+waitAlloy:
+bnez r0 setTemp # Freeze settings
+max r2 r2 lowTemp # Temp is positive
+min r2 r2 highTemp
+min r3 r3 lowPress # Press is negative
+max r3 r3 highPress
+s tempMem Setting r2
+lb r5 advFurnace SettingOutput Average
+bgtz r5 waitMelt # Do not set press while dumping
+lb r6 turboPump Setting Maximum
+bgtz r6 waitMelt # Do not set press while filling
+s pressMem Setting r3
+setTemp:
+#s tempMem Setting r2 # Do not freeze setting
+#s pressMem Setting r3
+# If RecipeHash is still not available after adjustement
+# it means something wrong happened.
+beqz r0 waitMelt
+sb advFurnace Open 1
+yield
+sb advFurnace Open 0
+sub targetQty targetQty 5 # 500 are done
+sleep 1
+lb r1 advFurnace Reagents Average
+bnez r1 waitMelt
+sb lever Open 1 # Prevent temp control
+j ra

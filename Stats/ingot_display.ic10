@@ -1,0 +1,98 @@
+alias statsReaderMem d0
+alias lcd d1
+
+alias prevVal r10
+alias tempo r11
+alias currentDisplay r12
+
+# Data 14=Coal - 32=Biomass
+#sp = 14
+move sp 14
+push 0
+push -404336834 #Copper
+push 0
+push 226410516 #Gold
+push 0
+push -1301215609 #Iron
+push 0
+push 2134647745 #Lead
+push 0
+push -1406385572 #Nickel
+push 0
+push -290196476 #Silicon
+push 0
+push -929742000 #Silver
+push 0
+push 0
+push 0
+push 1058547521 #Constantan
+push 0
+push 502280180 #Electrum
+push 0
+push -297990285 #Invar
+push 0
+push -82508479 #Solder
+push 0
+push -654790771 #Steel
+push 0
+push 0
+push 0
+push 412924554 #Astroloy
+push 0
+push 1579842814 #Hastelloy
+push 0
+push -787796599 #Inconel
+push 0
+push -1897868623 #Stellite
+push 0
+push 156348098 #Waspaloy
+#sp = 52
+
+move currentDisplay 16
+move tempo 0
+
+main:
+yield
+add tempo tempo 0.5
+l r0 d0:0 Channel3
+bneal r0 prevVal store
+
+bgt tempo 2 display
+
+j main
+
+store:
+move prevVal r0
+mod r1 r0 1000000
+div r0 r0 1000000
+round r0 r0
+sub r0 r0 7
+mul r0 r0 2
+move sp r0
+push r1
+j ra
+
+display:
+move tempo 0
+move sp currentDisplay
+pop r0
+beqz r0 empty
+pop r1
+div r1 r1 1000
+s db Setting r0
+s lcd Setting r1
+slt r2 r1 2
+slt r3 r1 5
+sgt r4 r1 160
+sgt r5 r1 200
+add r1 r2 2
+add r1 r1 r3
+add r1 r1 r4
+add r1 r1 r5
+s lcd Color r1
+
+empty:
+add currentDisplay currentDisplay 2
+ble currentDisplay 52 main
+move currentDisplay 4
+j main

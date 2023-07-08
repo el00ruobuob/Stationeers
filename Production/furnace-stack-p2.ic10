@@ -1,0 +1,126 @@
+#Smelting Ingots
+move sp 260 #Silver
+push 0
+push 0
+push 0
+push 0
+push 100
+push 10
+push -55000
+push 20000
+push -150
+push 650
+
+#Smelting Alloys
+move sp 300 #Constantan
+push 0
+push 0
+push 50
+push 8
+push 50
+push 4
+push -55000
+push 20000
+push -21000
+push 1100
+move sp 310 #Electrum
+push 0
+push 0
+push 50
+push 5
+push 50
+push 10
+push -2300
+push 20000
+push -850
+push 650
+move sp 320 #Invar
+push 0
+push 0
+push 50
+push 8
+push 50
+push 6
+push -19000
+push 1400
+push -19000
+push 1300
+move sp 330 #Solder
+push 0
+push 0
+push 50
+push 7
+push 50
+push 6
+push -55000
+push 500
+push -1050
+push 400
+move sp 340 #Steel
+push 0
+push 0
+push 25
+push 2
+push 75
+push 6
+push -55000
+push 20000
+push -1050
+push 950
+
+#Smelting Advanced Alloys
+move sp 400 #Astrolloy
+push 100
+push 3
+push 100
+push 4
+push 200
+push 26
+push -38000
+push 20000
+push -32000
+push 1100
+move sp 410 #Hastelloy
+push 100
+push 3
+push 100
+push 8
+push 200
+push 10
+push -29000
+push 985
+push -26000
+push 965
+move sp 420 #Inconel
+push 100
+push 26
+push 100
+push 8
+push 200
+push 5
+push -23750
+push 20000
+push -23750
+push 650
+move sp 430 #Stellite
+push 100
+push 3
+push 100
+push 10
+push 200
+push 9
+push -19000
+push 20000
+push -11000
+push 1900
+move sp 440 #Waspaloy
+push 100
+push 8
+push 100
+push 10
+push 200
+push 7
+push -55000
+push 750
+push -52000
+push 450

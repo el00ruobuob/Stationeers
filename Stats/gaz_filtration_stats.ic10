@@ -1,0 +1,31 @@
+alias tank d0
+alias filtration db
+alias mem d1
+
+main:
+yield
+l r0 filtration PressureInput
+l r1 filtration RatioOxygenInput
+mul r0 r0 r1
+sgt r0 r0 5
+s filtration Mode r0
+
+l r0 d1:0 Channel1
+#s db Setting r0
+bnan r0 main
+div r0 r0 10000000000
+round r0 r0
+bne r0 1 main
+yield
+yield
+l r1 tank Pressure
+round r1 r1
+l r2 tank Temperature
+round r2 r2
+move r0 200000
+add r0 r0 r1
+mul r0 r0 100000
+add r0 r0 r2
+s d1:0 Channel1 r0
+
+j main

@@ -1,0 +1,125 @@
+alias vending d0
+define Harvie 958056199  #slot 0 in/ 2 hand
+define Hydro -1841632400 #slot 0 plant
+
+define DVR -1337091041
+define FFR 163728359
+define FFL -810874728
+define stacker 1585641623
+
+alias timerH r15
+alias timerF r14
+alias harvieCall r13
+alias itemHash r12
+move harvieCall 0#12
+move itemHash 0
+
+sbn DVR HASH("DVout") Open 0
+sbn DVR HASH("DVout") Setting 1
+sb DVR On 1
+sbn FFR HASH("FFout") Setting 0
+sbn FFR HASH("FFcom") Setting 0
+sbn FFR HASH("FFin") Setting 0
+sbn FFR HASH("FFout") SettingOutput 0
+sbn FFR HASH("FFin") SettingOutput 0
+sbn FFR HASH("FFcom") SettingOutput 0
+sb FFR On 1
+sb FFL On 1
+sbn stacker HASH("StackerIn") Mode 1
+sbn stacker HASH("StackerIn") On 1
+main:
+yield
+l r0 db Setting
+bne r0 999 main
+sle r0 timerH 10
+select timerH r0 timerH 0
+breqz timerH 2
+add timerH timerH 0.5
+bgtz timerH bypassHarvie
+# Harvie Plant
+lbs r0 Harvie 0 Occupied Minimum
+lbs r1 Hydro 0 Occupied Minimum
+seqz r1 r1
+and r0 r0 r1
+lbs r1 Harvie 2 Occupied Minimum
+seqz r1 r1
+and r0 r0 r1
+breqz r0 7
+sb Harvie On 1
+yield
+sb Harvie Plant 1
+add timerH timerH 0.5
+jr 2
+sb Harvie On 0
+#Harvie Harvest
+lbs r0 Hydro 0 Seeding Minimum
+sgez r0 r0
+lbs r1 Hydro 0 Seeding Maximum
+seqz r1 r1
+or r0 r0 r1
+breqz r0 8
+sb Harvie On 1
+yield
+move harvieCall 0
+sb Harvie Harvest 1
+add timerH timerH 0.5
+jr 2
+sb Harvie On 0
+bypassHarvie:
+# Harvie Filling
+sle r0 timerF 3
+select timerF r0 timerF 0
+breqz timerF 2
+add timerF timerF 0.5
+bgtz timerF bypassFilling
+lbs r0 Harvie 0 Occupied Minimum
+lbs r1 Harvie 2 Occupied Maximum
+or r0 r0 r1
+lbs r1 Hydro 0 Occupied Maximum
+or r0 r0 r1
+sge r1 harvieCall 12
+breqz r1 6
+sbn DVR HASH("DVin") Open 1
+sbn FFR HASH("FFcom") Mode 0
+sbn FFR HASH("FFin") Mode 1
+sbn stacker HASH("StackerIn") Activate 1
+add timerF timerF 0.5
+or r0 r0 r1
+bnez r0 bypassFilling
+brnez itemHash 7
+move r0 1
+add r0 r0 1
+bgt r0 101 bypassFilling
+ls itemHash vending r0 OccupantHash
+breqz itemHash -3
+breq itemHash 1531087544 -4 #Decayed Food
+lbns r0 stacker HASH("StackerIn") 2 Occupied 0
+brnez r0 5
+s vending RequestHash itemHash
+sleep 2
+add timerF timerF 0.5
+j bypassFilling
+sb Harvie On 1
+add harvieCall harvieCall 1
+sbn DVR HASH("DVin") Open 1
+sbn FFR HASH("FFcom") Mode 0
+sbn FFR HASH("FFin") Mode 0
+sbn stacker HASH("StackerIn") Output 1
+add timerF timerF 0.5
+bypassFilling:
+# Seed Sorting
+# tomate/seed Clas 11/11 SortingClass 3/4
+# Check FFout occupied
+lbns r0 FFR HASH("FFout") 0 Occupied 1
+lbns r1 FFR HASH("FFout") 0 Occupied 2
+or r0 r0 r1
+bnez r0 bypassSorting
+lbns r0 DVR HASH("DVout") 0 Occupied 0
+beqz r0 bypassSorting
+lbns r1 DVR HASH("DVout") 0 SortingClass 0
+seq r1 r1 4
+sbn DVR HASH("DVout") Open 1
+sbn FFR HASH("FFout") Mode r1
+bypassSorting:
+
+j main

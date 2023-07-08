@@ -1,0 +1,122 @@
+#Selector
+push 19 #Charcoal
+push 21 #Copper
+push 22 #Gold
+push 23 #Iron
+push 24 #Lead
+push 25 #Nickel
+push 26 #Silicon
+push 27 #Silver
+push 31 #Constantan
+push 32 #Electrum
+push 33 #Invar
+push 34 #Solder
+push 35 #Steel
+push 41 #Astrolloy
+push 42 #Hastelloy
+push 43 #Inconel
+push 44 #Stellite
+push 45 #Waspaloy
+move sp 19
+push 252561409 #Charcoal
+move sp 20
+push -404336834 #Copper
+push 226410516 #Gold
+push -1301215609 #Iron
+push 2134647745 #Lead
+push -1406385572 #Nickel
+push -290196476 #Silicon
+push -929742000 #Silver
+move sp 30
+push 1058547521 #Constantan
+push 502280180 #Electrum
+push -297990285 #Invar
+push -82508479 #Solder
+push -654790771 #Steel
+move sp 40
+push 412924554 #Astrolloy
+push 1579842814 #Hastelloy
+push -787796599 #Inconel
+push -1897868623 #Stellite
+push 156348098 #Waspaloy
+
+#Smelting Ores
+move sp 180 #Charcoal
+push 0
+push 0
+push 0
+push 0
+push 100
+push 12
+push -55000
+push 20000
+push -150
+push 630
+
+#Smelting Ingots
+move sp 200 #Copper
+push 0
+push 0
+push 0
+push 0
+push 100
+push 4
+push -55000
+push 20000
+push -150
+push 650
+move sp 210 #Gold
+push 0
+push 0
+push 0
+push 0
+push 100
+push 5
+push -55000
+push 20000
+push -150
+push 650
+move sp 220 #Iron
+push 0
+push 0
+push 0
+push 0
+push 100
+push 6
+push -55000
+push 20000
+push -150
+push 850
+move sp 230 #Lead
+push 0
+push 0
+push 0
+push 0
+push 100
+push 7
+push -55000
+push 20000
+push -150
+push 450
+move sp 240 #Nickel
+push 0
+push 0
+push 0
+push 0
+push 100
+push 8
+push -55000
+push 20000
+push -150
+push 850
+move sp 250 #Silicon
+push 0
+push 0
+push 0
+push 0
+push 100
+push 9
+push -55000
+push 20000
+push -150
+push 950

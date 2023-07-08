@@ -1,0 +1,126 @@
+alias doorInt d0
+alias doorExt d1
+define occupancy 322782515
+define prox 568800213
+define sensor -1252983604
+define vent -1129453144
+alias state r15
+# 0 Error, 1 Int, 2 I2E, 3 Ext, 4 E2I, 5 bypass
+alias hasMoved r14
+s db Setting 0
+s doorInt Lock 1
+s doorExt Lock 1
+sb vent Lock 1
+move hasMoved 1
+main:
+yield #Bypass first
+lb r5 sensor Pressure Minimum
+lb r6 sensor Pressure Maximum
+sap r4 r5 r6 0.2
+beqz r6 vaccum
+lb r5 sensor RatioPollutant Minimum
+slt r5 r5 0.01
+and r4 r4 r5
+lb r5 sensor RatioNitrousOxide Minimum
+slt r5 r5 0.001
+and r4 r4 r5
+lb r5 sensor RatioVolatiles Minimum
+slt r5 r5 0.001
+and r4 r4 r5
+lb r5 sensor Temperature Minimum
+sgt r5 r5 288.15
+and r4 r4 r5
+lb r5 sensor Temperature Maximum
+slt r5 r5 308.15
+and r4 r4 r5
+vaccum:
+mul state r4 5
+beqz state noBypass
+s doorInt Open 1
+s doorExt Open 1
+s doorInt On 0
+s doorExt On 0
+j main
+noBypass:
+l r0 doorInt Open
+l r1 doorExt Open
+lbn r2 vent HASH("ventExt") Mode 0
+and r3 r0 r1
+move state 0
+bnez r3 endInit
+mul r3 r1 3
+add r3 r3 r0
+move state r3
+bnez state endInit
+or r3 r0 r1
+seqz r3 r3
+add r3 r2 r3
+mul r3 r3 2
+move state r3
+beqz state E2I
+endInit:
+lbn r0 occupancy HASH("OS Int") Activate 0
+snan r13 r0
+breqz r13 2
+lbn r0 prox HASH("PS Int") Activate 0
+sgtz r0 r0
+lbn r1 occupancy HASH("OS Ext") Activate 0
+snan r13 r1
+breqz r13 2
+lbn r1 prox HASH("PS Ext") Activate 0
+sgtz r1 r1
+lbn r2 occupancy HASH("OS SAS") Activate 0
+sgtz r2 r2
+or r7 r0 r1
+max hasMoved hasMoved r7
+seqz r7 r7
+seq r3 state 3
+and r3 r3 r0
+seqz r8 r2
+and r3 r3 r8
+bnez r3 E2I
+seq r4 state 1
+and r4 r4 r1
+and r4 r4 r8
+bnez r4 I2E
+seq r5 state 1
+and r5 r5 r2
+and r5 r5 hasMoved
+and r5 r5 r7
+bnez r5 I2E
+seq r6 state 3
+and r6 r6 r2
+and r6 r6 hasMoved
+and r6 r6 r7
+bnez r6 E2I
+or r5 r5 r6
+beqz r5 main
+j main
+I2E:
+move r10 0
+move r11 HASH("ventInt")
+move r12 HASH("ventExt")
+j transit
+E2I:
+move r10 1
+move r11 HASH("ventExt")
+move r12 HASH("ventInt")
+transit:
+s doorInt On 1
+s doorExt On 1
+s dr10 Open 0
+seqz r10 r10
+yield
+sbn vent r11 Mode 1
+sbn vent r12 Mode 0
+sbn vent r11 On 1
+lbn r0 sensor HASH("sensorSAS") Pressure 0
+yield
+brgtz r0 -3
+yield
+sbn vent r11 On 0
+s dr10 Open 1
+s doorInt On 0
+s doorExt On 0
+move hasMoved 0
+j main

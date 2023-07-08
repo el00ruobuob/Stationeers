@@ -1,0 +1,13 @@
+alias tank d0
+alias filtration d1
+alias sensor d2
+
+main:
+l r0 sensor Pressure
+l r1 sensor RatioNitrogen
+mul r0 r0 r1
+sgt r0 r0 5
+s filtration On r0
+
+yield
+j main

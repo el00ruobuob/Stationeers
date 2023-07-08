@@ -1,0 +1,41 @@
+alias ChannelDev r0
+
+define silo 1155865682
+#sp = 2
+move sp 14
+push HASH("SDB Silo Copper")
+push HASH("SDB Silo Gold")
+push HASH("SDB Silo Iron")
+push HASH("SDB Silo Lead")
+push HASH("SDB Silo Nickel")
+push HASH("SDB Silo Silicon")
+push HASH("SDB Silo Silver")
+push 0
+push HASH("SDB Silo Constantan")
+push HASH("SDB Silo Electrum")
+push HASH("SDB Silo Invar")
+push HASH("SDB Silo Solder")
+push HASH("SDB Silo Steel")
+push 0
+push HASH("SDB Silo Astroloy")
+push HASH("SDB Silo Hastelloy")
+push HASH("SDB Silo Inconel")
+push HASH("SDB Silo Stellite")
+push HASH("SDB Silo Waspaloy")
+#sp = 33
+
+main:
+move sp 33
+loop:
+yield
+yield
+pop r10
+breqz r10 -1
+lbn r0 silo r10 Quantity 0
+mul r0 r0 500
+mul r1 sp 1000000
+add r1 r1 r0
+s d0:0 Channel3 r1
+bgt sp 14 loop
+
+j main

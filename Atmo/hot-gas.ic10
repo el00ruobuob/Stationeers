@@ -1,0 +1,33 @@
+alias tankCold d0
+alias tankHot d1
+alias BPcold d2
+alias BPhot d3
+
+define AC -2087593337
+define filtration -348054045
+define tankSmall 272136332
+
+alias PresCold r5
+alias PresHot r6
+alias minPress r7
+
+main:
+l PresCold tankCold Pressure
+l PresHot tankHot Pressure
+lb minPress tankSmall Pressure Minimum
+
+slt r0 PresCold 50000
+slt r1 PresHot 50000
+or r0 r0 r1
+sb AC On r0
+sb AC Open r0
+sb filtration On r0
+
+sgt r2 PresCold 55000
+s BPcold On r2
+
+sgt r3 PresHot 55000
+s BPhot On r3
+
+yield
+j main

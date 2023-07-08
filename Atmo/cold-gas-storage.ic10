@@ -1,0 +1,19 @@
+alias tank d0
+alias valve d1
+
+define ac -2087593337
+define pump -348054045
+
+main:
+l r0 tank Pressure
+slt r0 r0 5000
+sb ac On r0
+sb ac Open r0
+sb pump On r0
+
+l r1 tank Temperature
+sgt r1 r1 123
+s valve On r1
+
+yield
+j main

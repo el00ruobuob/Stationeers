@@ -1,0 +1,84 @@
+alias furnA d0
+alias stackA d1
+alias furnB d2
+alias stackB d3
+
+alias furn r5
+alias stack r6
+alias wait r7
+alias furnIn r8
+alias furnProc r9
+alias furnHash r10
+
+alias waitA r11
+alias waitB r12
+
+move r5 0
+move r6 1
+move r7 11
+move r11 0
+move r12 0
+brdns stackA 3
+s stackA Mode 1
+s stackA On 1
+brdns stackB 3
+s stackB Mode 1
+s stackB On 1
+
+main:
+yield
+
+sgt r0 r5 2
+select r5 r0 0 r5
+select r6 r0 1 r6
+select r7 r0 11 r7
+brnez r5 4
+bdns d0 end
+bdns d1 end
+breqz r5 3
+bdns d2 end
+bdns d3 end
+
+ls furnIn dr5 0 Quantity
+l furnProc dr5 Reagents
+l furnHash dr5 RecipeHash
+
+seqz r0 furnIn
+snez r1 furnProc
+and r0 r0 r1
+seqz r1 furnHash
+and r0 r0 r1
+bnezal r0 open
+
+bnezal furnIn close
+beqzal furnProc close
+
+seqz r0 furnIn
+seqz r1 furnProc
+and r0 r0 r1
+bnezal r0 call
+
+end:
+add r5 r5 2
+add r6 r6 2
+add r7 r7 1
+
+j main
+
+open:
+s dr5 Open 1
+move rr7 0
+j ra
+
+close:
+s dr5 Open 0
+j ra
+
+call:
+bnez rr7 ra
+ls r0 dr6 2 Quantity
+beqz r0 ra
+move rr7 1
+s dr6 Setting r0
+s dr6 Output 0
+j ra

@@ -1,0 +1,45 @@
+alias Vplus d0
+alias Vminus d1
+alias Hplus d2
+alias Hminus d3
+alias Precision d4
+alias Vled d5
+
+alias Vval r10
+alias Hval r11
+alias Pmode r12
+
+define dish 439026183
+define led -815193061
+
+s Vled Mode 1
+
+main:
+yield
+l Pmode Precision Setting
+select Pmode Pmode 1 5
+
+l r0 Vplus Setting
+mul r0 r0 Pmode
+add Vval Vval r0
+l r0 Vminus Setting
+mul r0 r0 Pmode
+sub Vval Vval r0
+min Vval Vval 100
+max Vval Vval 0
+sb dish Vertical Vval
+
+l r0 Hplus Setting
+mul r0 r0 Pmode
+add Hval Hval r0
+l r0 Hminus Setting
+mul r0 r0 Pmode
+sub Hval Hval r0
+mod Hval Hval 360
+sb dish Horizontal Hval
+
+sb led Setting Hval
+div r0 Vval 100
+s Vled Setting r0
+
+j main

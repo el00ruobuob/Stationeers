@@ -1,0 +1,56 @@
+alias print d0
+alias stack d1
+
+alias tempo r0
+alias ammount r1
+alias printOn r2
+alias printActive r3
+alias printExported r4
+alias printedHash r5
+alias prevPrintedHash r6
+
+jal reset
+
+main:
+l printOn print On
+beqz printOn off
+s stack On 1
+
+l printedHash print RecipeHash
+bneal prevPrintedHash printedHash reset
+
+l printActive print Activate
+beqz printActive idle
+
+l ammount stack Setting
+l printExported print ExportCount
+bge printExported ammount finished
+
+end:
+move prevPrintedHash printedHash
+yield
+j main
+
+off:
+s print On 0
+s stack On 0
+move tempo 0
+j end
+
+idle:
+add tempo tempo 0.5
+s db Setting tempo
+bge tempo 30 off
+j end
+
+reset:
+s stack Activate 1
+s print ClearMemory 1
+move tempo 0
+j ra
+
+finished:
+s print On 0
+sleep 2
+jal reset
+j off

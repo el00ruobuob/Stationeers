@@ -1,0 +1,37 @@
+
+alias tank d0
+alias purge d1
+
+define clim -2087593337
+define BPreg -1149857558
+
+alias temp r5
+alias press r6
+
+main:
+yield
+sb BPreg Setting 0
+s purge Setting 55000
+
+l temp tank Temperature
+l press tank Pressure
+
+mul press press 900
+div press press temp
+s db Setting press
+
+select temp press temp 0
+
+slt r0 press 50000
+sgt r1 temp 120
+or r0 r0 r1
+slt r1 press 55000
+and r0 r0 r1
+sb clim On r0
+sb clim Open r0
+sb BPreg On r0
+
+sgt r1 temp 120
+s purge On r1
+
+j main

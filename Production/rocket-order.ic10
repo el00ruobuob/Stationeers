@@ -1,0 +1,35 @@
+alias ARM d0
+alias button d1
+alias silo d2
+alias tank d3
+
+alias rocketIsReady r5
+alias armMode r10
+
+main:
+yield
+l r0 db Setting
+beqz r0 main
+
+jal rocketReady
+beqz rocketIsReady main
+
+s button Activate 1
+sleep 60
+jal rocketReady
+breqz rocketIsReady -2
+
+s db Setting 0
+
+j main
+
+rocketReady:
+l armMode ARM Mode
+seqz r1 armMode
+l r2 silo Quantity
+seqz r2 r2
+l r3 tank Pressure
+sgt r3 r3 10000
+and rocketIsReady r1 r2
+and rocketIsReady r5 r3
+j ra

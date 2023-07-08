@@ -1,0 +1,125 @@
+alias sSP r4
+alias tSP r5
+alias rVal r6
+alias rValPrev r7
+alias rInf r8
+alias rDev r9
+alias rMat r10
+alias rStat r11
+alias rFlag r12
+alias sDev r13
+alias sMat r14
+alias sStat r15
+move tSP 0
+main:
+yield
+move sSP 0
+l rVal db Setting
+beq rVal rValPrev main # Ignore unchanged rVal
+beq rVal 0 main # Nothing to do with rVal == 0
+move r0 12 # Prepare demux of rVal
+move r1 rVal
+jal demux
+brnez rInf 2
+beqal rStat 1 sAdd
+breq rStat 1 7
+jal sFind
+breqz rDev 4
+breq sSP -1 3 # No update or delete if not found
+bltal rStat 6 sUpdate
+beqal rStat 6 sDelete
+beqzal rDev vDisplay
+beqal sSP -1 vAck
+move rValPrev rVal # Backup rVal for comparision
+j main
+demux:
+sle r3 r0 12 # Set loop count increment
+add r3 r3 3 # Loop count 3 or 4
+mod rr0 r1 100 # Flag
+brge r0 13 2 # overwrite Flag by skipping sub
+sub r0 r0 1 # Loop begin
+div r1 r1 100
+floor r1 r1
+mod rr0 r1 100 # Stat Mat Dev Inf
+sub r3 r3 1
+brgtz r3 -5 # to loop begin
+j ra
+sFind:
+move sp tSP # Start at top of Stack
+move r2 ra # Backup ra
+move sSP -1 # Default sSP to -1
+findLoop:
+beq sp 0 r2 # If stack is empty, nothing to do
+move r0 15 # Prepare demux for existing stack data
+pop r1 # Get data from stack
+jal demux
+seq r0 rMat sMat # Check if Material is matching
+breqz rStat 3 # Ignore status if empty
+sge r3 rStat sStat # Check if Status is at least
+and r0 r0 r3
+breqz rDev 3 # Ignore Device if empty
+seq r3 rDev sDev # Check if device matches
+and r0 r0 r3
+beqz r0 findLoop
+add sSP sp 1
+j r2
+sAdd:
+move r0 rVal
+add tSP tSP 1
+move sp 0
+addLoop:
+move r1 r0
+add sp sp 1
+pop r0
+push r1
+bne tSP sp addLoop
+add r0 rVal 1
+add r1 r0 1
+s db Setting r0
+yield
+l r0 db Setting
+brne r0 r1 -2
+add rVal rVal 99
+move sSP -1
+j ra
+sUpdate:
+move sp sSP
+sub sp sp 1
+mul r0 rInf 100000000
+sub r0 rVal r0 # Remove Inf before storing
+push r0
+move sSP -1
+j ra
+sDelete:
+beq sSP -1 ra
+move sp tSP
+pop r0
+push 0
+jr 5
+deleteLoop:
+move r1 r0
+pop r0
+push r1
+sub sp sp 1
+bge sp sSP deleteLoop
+move sSP -1
+sub tSP tSP 1
+j ra
+vDisplay:
+add rVal rVal 1000000 # Defaults to None Device
+breq sSP -1 6
+move sp sSP
+pop rVal
+mul r0 rInf 100000000 # Add Inf to the stored value
+add rVal rVal r0
+move sSP -1
+j ra
+vAck:
+add rVal rVal 1
+add r0 rVal 1
+s db Setting rVal
+yield
+l r1 db Setting
+brne r0 r1 -2
+s db Setting 0
+j ra

@@ -1,0 +1,24 @@
+alias sensor d0
+
+alias HsolarAngle r0
+alias VsolarAngle r1
+alias VpanelAngle r2
+
+start:
+l HsolarAngle sensor Horizontal
+l VsolarAngle sensor Vertical
+
+add HsolarAngle HsolarAngle 90
+
+#div VpanelAngle VsolarAngle 1.5
+sub VpanelAngle 90 VsolarAngle
+max VpanelAngle VpanelAngle 15
+
+sb -539224550 Horizontal HsolarAngle
+sb -539224550 Vertical VpanelAngle
+
+sb -1545574413 Horizontal HsolarAngle
+sb -1545574413 Vertical VpanelAngle
+
+yield
+j start

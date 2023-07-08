@@ -1,0 +1,54 @@
+alias occupied d0
+alias seeding d1
+alias mature d2
+
+alias blocked r10
+
+define HARVIE 958056199
+
+sb HARVIE On 1
+sb HARVIE Activate 0
+
+move r11 0
+
+main:
+yield
+max r11 r11 0
+#sb HARVIE Harvest 0
+#sb HARVIE Plant 0
+#lb r0 HARVIE Activate Maximum
+#add blocked blocked r0
+#brnez r0 19
+l r1 seeding Setting
+brlt r1 1 6
+sleep 5
+sb HARVIE Activate 0
+yield
+sb HARVIE Harvest 1
+sleep 30
+l r1 mature Setting
+brlt r1 1 8
+add r11 r11 1
+s db Setting r11
+brlt r11 600 5
+sb HARVIE Activate 0
+yield
+sb HARVIE Harvest 1
+sleep 30
+
+lb r2 -1713470563 Quantity Sum
+brgt r2 10 8
+l r1 occupied Setting
+brgtz r1 6
+sb HARVIE Activate 0
+yield
+sb HARVIE Plant 1
+move r11 0
+sleep 30
+
+#slt r0 blocked 40
+#brnez r0 3
+#move blocked 0
+#sb HARVIE Activate 0
+
+j main

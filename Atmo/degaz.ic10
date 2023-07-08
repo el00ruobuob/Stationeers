@@ -1,0 +1,50 @@
+alias purge d0
+alias warmer d1
+#alias vent d2
+#alias back d3
+
+alias furnPress r5
+alias furnTemp r6
+alias purgeOn r7
+alias warmerOn r8
+#alias warmerSet r9
+
+define furnace 1947944864
+
+#s vent Mode 0
+#s vent PressureInternal 1000
+#s back Setting 100
+
+main:
+yield
+lb furnPress furnace Pressure Average
+lb furnTemp furnace Temperature Minimum
+
+sgt purgeOn furnPress 500
+slt r0 furnTemp 420
+and purgeOn r0 purgeOn
+slt warmerOn furnTemp 390
+#sub warmerSet 400 furnTemp
+#mul warmerSet warmerSet 50
+#min warmerSet warmerSet 100
+#max warmerSet 0 warmerSet
+#mul warmerSet warmerSet warmerOn
+
+#sub r0 1 warmerOn
+#and purgeOn r0 purgeOn
+sgt r0 furnPress 25000
+or purgeOn r0 purgeOn
+
+sub r0 1 r0
+and warmerOn r0 warmerOn
+
+s purge On purgeOn
+s warmer On warmerOn
+#s warmer Setting 10
+#s warmer Setting warmerSet
+#s vent On warmerOn
+#s back On warmerOn
+
+s db Setting furnTemp
+
+j main

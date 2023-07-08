@@ -1,0 +1,46 @@
+alias sensor d0
+alias climValve d1
+alias pumpValve d2
+alias N2Pump d3
+alias CO2Pump d4
+alias O2Pump d5
+
+main:
+yield
+l r0 sensor Temperature
+sgt r1 r0 298
+slt r2 r0 323
+and r1 r1 r2
+s climValve On r1
+
+bgt r0 323 main
+
+l r0 sensor Pressure
+l r1 sensor RatioNitrogen
+mul r1 r1 r0
+slt r1 r1 70
+s N2Pump On r1
+
+l r1 sensor RatioCarbonDioxide
+mul r1 r1 r0
+slt r1 r1 5
+s CO2Pump On r1
+
+l r1 sensor RatioOxygen
+mul r1 r1 r0
+slt r1 r1 30
+s O2Pump On r1
+
+sgt r0 r0 110
+l r1 sensor RatioNitrousOxide
+sgt r1 r1 0.005
+or r0 r0 r1
+l r1 sensor RatioPollutant
+sgt r1 r1 0.005
+or r0 r0 r1
+l r1 sensor RatioVolatiles
+sgt r1 r1 0.005
+or r0 r0 r1
+s pumpValve On r0
+
+j main

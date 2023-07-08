@@ -1,0 +1,26 @@
+alias sensor d0
+alias tank d1
+alias purge d2
+
+alias temp r5
+alias press r6
+
+define VENT -1129453144
+
+sb VENT Mode 1
+
+main:
+yield
+l temp sensor Temperature
+l press tank Pressure
+
+sgt r0 temp 850
+slt r1 press 50000
+
+and r0 r0 r1
+sb VENT On r0
+
+sgt r1 press 51000
+s purge On r1
+
+j main
