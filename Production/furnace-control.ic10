@@ -88,7 +88,7 @@ l r1 midSensor Pressure
 div r2 r2 r1
 l r1 midSensor Temperature
 mul r2 r2 r1 #div r2 r2 rConstB
-min r12 r2 1000
+min r12 r2 100
 max r12 r12 0
 jal emerg
 s midPump Setting r12
@@ -102,7 +102,7 @@ bne mode 2 main # Adjust Hot / Cold
 sub r3 1 r3
 s dr15 On r0
 mul r0 volumeIn 1#r0 #div r0 r0 6 #div r2 r2 2
-min r11 r0 1000
+min r11 r0 100
 max r11 r11 0
 jal emerg
 s dr15 Setting r11

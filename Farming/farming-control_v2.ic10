@@ -1,12 +1,10 @@
 alias vending d0
 define Harvie 958056199  #slot 0 in/ 2 hand
 define Hydro -1841632400 #slot 0 plant
-
 define DVR -1337091041
 define FFR 163728359
 define FFL -810874728
 define stacker 1585641623
-
 alias timerH r15
 alias timerF r14
 alias harvieCall r13
@@ -20,13 +18,16 @@ sb DVR On 1
 sbn FFR HASH("FFout") Setting 0
 sbn FFR HASH("FFcom") Setting 0
 sbn FFR HASH("FFin") Setting 0
+sbn FFL HASH("FFfill") Setting 0
 sbn FFR HASH("FFout") SettingOutput 0
 sbn FFR HASH("FFin") SettingOutput 0
 sbn FFR HASH("FFcom") SettingOutput 0
+sbn FFL HASH("FFfill") SettingOutput 0
 sb FFR On 1
 sb FFL On 1
 sbn stacker HASH("StackerIn") Mode 1
 sbn stacker HASH("StackerIn") On 1
+
 main:
 yield
 l r0 db Setting
@@ -67,7 +68,10 @@ jr 2
 sb Harvie On 0
 bypassHarvie:
 # Harvie Filling
-sle r0 timerF 3
+lbs r0 Hydro 0 Occupied Maximum
+seqz r0 r0
+sbn FFL HASH("FFfill") Mode r0
+sle r0 timerF 10
 select timerF r0 timerF 0
 breqz timerF 2
 add timerF timerF 0.5
@@ -107,9 +111,7 @@ sbn FFR HASH("FFin") Mode 0
 sbn stacker HASH("StackerIn") Output 1
 add timerF timerF 0.5
 bypassFilling:
-# Seed Sorting
-# tomate/seed Clas 11/11 SortingClass 3/4
-# Check FFout occupied
+# Seed Sorting tomate/seed Clas 11/11 SortingClass 3
 lbns r0 FFR HASH("FFout") 0 Occupied 1
 lbns r1 FFR HASH("FFout") 0 Occupied 2
 or r0 r0 r1

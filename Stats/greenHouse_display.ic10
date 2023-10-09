@@ -1,0 +1,75 @@
+alias statsReaderMem d0
+alias lcd d1
+
+alias prevVal r10
+alias tempo r11
+alias currentDisplay r12
+
+# Data 1=Tomato - 7=Rice
+#sp = 0
+move sp 0
+push 0
+push -998592080 #ItemTomato
+push 0
+push 1929046963 #ItemPotato
+push 0
+push 1277828144 #ItemPumpkin
+push 0
+push -1057658015 #ItemWheat
+push 0
+push 258339687 #ItemCorn
+push 0
+push 1924673028 #ItemSoybean
+push 0
+push 658916791 #ItemRice
+#sp = 14
+
+move currentDisplay 2
+move tempo 0
+
+main:
+yield
+add tempo tempo 0.5
+l r0 d0:0 Channel4
+
+brnan r0 2
+bneal r0 prevVal store
+
+bgt tempo 2 display
+
+j main
+
+store:
+move prevVal r0
+mod r1 r0 1000
+div r0 r0 1000
+floor r0 r0
+mul r0 r0 2
+sub r0 r0 2
+move sp r0
+push r1
+j ra
+
+display:
+move tempo 0
+move sp currentDisplay
+pop r0
+#beqz r0 empty
+pop r1
+s db Setting r0
+s lcd Setting r1
+slt r2 r1 5
+slt r3 r1 10
+sgt r4 r1 80
+sgt r5 r1 90
+add r1 r2 2
+add r1 r1 r3
+add r1 r1 r4
+add r1 r1 r5
+s lcd Color r1
+
+empty:
+add currentDisplay currentDisplay 2
+ble currentDisplay 14 main
+move currentDisplay 2
+j main

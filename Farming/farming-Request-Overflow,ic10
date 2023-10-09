@@ -1,6 +1,9 @@
 alias vending d0
 alias icPlant d1
+alias statsDev d2
 
+alias curQty r11
+alias isOccupied r10
 alias slot r9
 alias hasDecay r8
 
@@ -8,6 +11,7 @@ define decayFood 1531087544
 define stacker 1585641623
 define DVR -1337091041
 define FFR 163728359
+define hydro -1841632400
 
 main:
 yield
@@ -21,7 +25,29 @@ seq hasDecay r0 decayFood
 beqz hasDecay loopSlot
 endLoopSlot:
 # Handle Decay Food
-bnezal hasDecay handleDecay
+lbs isOccupied hydro 0 Occupied Maximum
+and r0 hasDecay isOccupied
+bnezal r0 handleDecay
+
+# Handle Full
+l curQty vending Quantity
+sge r1 curQty 80
+and r1 r1 isOccupied
+select r1 r1 0 999
+s icPlant Setting r1
+
+# Stats
+l r0 d2:0 Channel4
+brnan r0 7 # Prime
+#bnan r0 main # Not Prime
+div r1 r0 1000
+floor r1 r1
+bne r1 7 main
+yield
+yield
+add r0 1000 curQty # 1000 tomato - 7000 rice
+s d2:0 Channel4 r0
+
 j main
 
 handleDecay:

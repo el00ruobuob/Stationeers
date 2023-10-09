@@ -1,0 +1,43 @@
+alias sorterCentrifuge d0
+alias centrifuge d1
+alias sorterReagents d2
+alias sorterRecycler d3
+alias recycler d4
+
+s sorterCentrifuge Mode 2
+s sorterReagents Mode 2
+s sorterRecycler Mode 2
+s sorterCentrifuge On 1
+s sorterReagents On 1
+s sorterRecycler On 1
+
+main:
+yield
+ls r0 sorterCentrifuge 0 OccupantHash
+breqz r0 3
+seq r0 r0 -1641500434
+s sorterCentrifuge Output r0
+
+ls r0 sorterReagents 0 OccupantHash
+breqz r0 3
+seq r0 r0 -1641500434
+s sorterReagents Output r0
+
+ls r0 sorterRecycler 0 Class
+breqz r0 3
+seq r0 r0 10 # Ores
+s sorterRecycler Output r0
+
+ls r0 centrifuge 0 Occupied
+l r1 centrifuge Reagents
+sgtz r1 r1
+or r0 r0 r1
+#s centrifuge On r0
+
+ls r0 recycler 0 Occupied
+l r1 recycler Reagents
+sgt r1 r1 10
+or r0 r0 r1
+s recycler On r0
+
+j main

@@ -1,0 +1,79 @@
+alias mem d0
+alias ledPressure d1
+alias ledTemperature d2
+
+alias tempo r14
+alias currentDisplay r9
+move currentDisplay 5
+move r14 0
+
+# sp push from 2
+move sp 2
+push 63677771
+add sp sp 2
+push -1067319543
+add sp sp 2
+push 416897318
+add sp sp 2
+push -632657357
+add sp sp 2
+push 1037507240
+add sp sp 2
+push 8804422
+add sp sp 2
+push -1567752627
+add sp sp 2
+push -1414203269
+add sp sp 2
+push 1819167057
+# sp pop from 29
+main:
+yield
+add tempo tempo 0.5
+l r0 d0:0 Channel1
+
+brnan r0 2
+bneal r0 r13 store
+
+move r13 r0
+
+bgt tempo 2 display
+
+j main
+
+store:
+mod r12 r0 100000
+div r10 r0 100000
+floor r10 r10
+mod r11 r10 100000
+div r10 r10 100000
+floor r10 r10
+mul r10 r10 3
+move sp r10
+push r11
+push r12
+j ra
+
+display:
+move tempo 0
+move sp currentDisplay
+pop r0
+sub r0 r0 273
+s ledTemperature Setting r0
+pop r0
+slt r1 r0 1000
+slt r2 r0 4000
+sgt r3 r0 25000
+sgt r4 r0 45000
+add r1 r1 2
+add r1 r1 r2
+add r1 r1 r3
+add r1 r1 r4
+s ledPressure Color r1
+s ledPressure Setting r0
+pop r0
+s db Setting r0
+add currentDisplay currentDisplay 3
+ble currentDisplay 29 main
+move currentDisplay 5
+j main

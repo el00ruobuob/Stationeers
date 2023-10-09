@@ -1,0 +1,125 @@
+alias reqIC d1
+alias sysName r4
+alias pQty r5
+alias sortQty r6
+alias sQty r7
+alias sMat r8
+alias rVal r9
+alias rQty r10
+alias rInf r11
+alias rDev r12
+alias rMat r13
+alias rStat r14
+alias rFlag r15
+
+define infID 1 #Stacker
+define Stacker -2020231820 #Left
+define flipflop 163728359 #Right
+
+sb Stacker Mode 1
+sb flipflop Setting 0
+sb flipflop SettingOutput 0
+sb flipflop On 1
+
+move sp 33
+push 0
+brlt sp 512 -1
+
+move sysName HASH("sysStack4")
+pause:
+brne sysName HASH("sysStack4") 2
+yield
+main:
+#loop:
+brne sysName HASH("sysStack4") 3
+move sysName HASH("sysStack1")
+jr 7
+brne sysName HASH("sysStack3") 2
+move sysName HASH("sysStack4")
+brne sysName HASH("sysStack2") 2
+move sysName HASH("sysStack3")
+brne sysName HASH("sysStack1") 2
+move sysName HASH("sysStack2")
+s db Setting sysName
+lbns sQty Stacker sysName 2 Quantity 0
+beqz sQty pause
+lbns r0 Stacker sysName 1 Occupied 0
+bnez r0 pause
+lbns r0 flipflop sysName 0 Occupied 0
+bnez r0 pause
+lbns r1 Stacker sysName 2 OccupantHash 0
+move sp 33 # Get Material
+beqz sp defaultMat
+pop r0
+brne r0 r1 -2 # Loop around Stack to find hash
+seq r0 sp 1
+add sp sp r0 # Handle charcoal as coal
+move sMat sp
+mul r0 sMat 10000 # Get ReqIC Data
+mul r1 infID 100000000 # Prepare Inf in reqVal
+add r0 r0 r1 # Add Inf value
+add r0 r0 301 # Set Stat & Flag to Syn
+jal startCom
+sgt r1 rDev 1 # Prepare deCount when dev != None
+bnezal r1 deCount
+select r2 r1 pQty sQty
+sbn Stacker sysName Setting r2
+sbn Stacker sysName Output 0
+seqz r2 r1
+sbn flipflop sysName Mode r2
+seqz r0 sortQty
+and r0 r0 r1
+bnezal r0 updateData
+#bne sysName HASH("sysStack4") loop
+#sleep 2 # No need to sleep anymore
+j main
+
+updateData:
+sub r0 5 rStat
+mul r0 r0 100
+sub r0 r0 rFlag
+add r0 r0 1
+add r0 rVal r0
+startCom: # This com method is used in info request
+move r2 ra
+yield
+l rVal reqIC Setting
+brnez rVal -2 # Loop until rVal == 0
+s reqIC Setting r0 # Set the needed value
+yield
+l rVal reqIC Setting
+breq rVal r0 -3 # Loop until rVal has changed
+jal demux
+brne rInf infID -8 # Stacker == 1XXX, restart until
+brne rFlag 2 -9 # Wait for SYN-ACK, restart until
+add r0 rVal 1 # Prepare Ack
+s reqIC Setting r0 # Final Ack
+j r2
+
+demux: # new
+move r3 15 # Prepare to get from Flag to Inf
+move rQty rVal
+mod rr3 rQty 100
+div rQty rQty 100
+floor rQty rQty
+sub r3 r3 1
+brgt r3 10 -4
+j ra
+
+deCount:
+mul r0 rDev 32 # max 15 dev
+sub r0 r0 64 # rDev 3 - 17
+add sp sMat r0
+pop r0
+select r0 r0 r0 rQty
+min pQty r0 sQty
+sub r0 r0 sQty
+max sortQty r0 0
+push sortQty
+j ra
+
+defaultMat:
+sbn Stacker sysName Setting sQty
+sbn Stacker sysName Output 0
+sbn flipflop sysName Mode 1
+j main

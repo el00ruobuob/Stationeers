@@ -55,6 +55,8 @@ main:
 yield
 add tempo tempo 0.5
 l r0 d0:0 Channel3
+
+brnan r0 2
 bneal r0 prevVal store
 
 bgt tempo 2 display
@@ -65,7 +67,7 @@ store:
 move prevVal r0
 mod r1 r0 1000000
 div r0 r0 1000000
-round r0 r0
+floor r0 r0
 sub r0 r0 7
 mul r0 r0 2
 move sp r0
@@ -93,6 +95,7 @@ s lcd Color r1
 
 empty:
 add currentDisplay currentDisplay 2
+beqz r0 display
 ble currentDisplay 52 main
-move currentDisplay 4
+move currentDisplay 16
 j main

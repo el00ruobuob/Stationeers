@@ -1,0 +1,35 @@
+push 0
+push 252561409 #Charcoal
+push 1724793494 #Coal
+push -983091249 #Cobalt
+push -707307845 #Copper
+push -1348105509 #Gold
+push 1758427767 #Iron
+push -190236170 #Lead
+push 1830218956 #Nickel
+push 1103972403 #Silicon
+push -916518678 #Silver
+push -1516581844 #Uranium
+push -831480639 #Biomass
+push 0
+push -404336834 #Copper
+push 226410516 #Gold
+push -1301215609 #Iron
+push 2134647745 #Lead
+push -1406385572 #Nickel
+push -290196476 #Silicon
+push -929742000 #Silver
+push 0
+push 1058547521 #Constantan
+push 502280180 #Electrum
+push -297990285 #Invar
+push -82508479 #Solder
+push -654790771 #Steel
+push 0
+push 412924554 #Astrolloy
+push 1579842814 #Hastelloy
+push -787796599 #Inconel
+push -1897868623 #Stellite
+push 156348098 #Waspaloy
+push 0
+brlt sp 512 -1

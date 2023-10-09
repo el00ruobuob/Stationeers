@@ -1,0 +1,25 @@
+alias sorter d0
+alias stacker d1
+
+s sorter Mode 2
+s sorter On 1
+
+s stacker Mode 1
+s stacker On 1
+
+main:
+yield
+ls r0 sorter 0 Quantity
+beqz r0 sub
+ls r0 sorter 0 Class
+seq r0 r0 10
+s sorter Output r0
+
+sub:
+ls r0 stacker 2 Quantity
+beqz r0 main
+min r0 r0 50
+s stacker Setting r0
+s stacker Output 0
+
+j main

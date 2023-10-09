@@ -39,6 +39,7 @@ main:
 yield
 add tempo tempo 0.5
 l r0 d0:0 Channel2
+brnan r0 2
 bneal r0 prevVal store
 
 bgt tempo 2 display
@@ -49,7 +50,9 @@ store:
 move prevVal r0
 mod r1 r0 1000000
 div r0 r0 1000000
-round r0 r0
+floor r0 r0
+sub r0 r0 1
+mul r0 r0 2
 move sp r0
 push r1
 j ra
@@ -62,17 +65,17 @@ pop r1
 div r1 r1 1000
 s db Setting r0
 s lcd Setting r1
-slt r1 r0 2
-slt r2 r0 5
-sgt r3 r0 160
-sgt r4 r0 200
-add r1 r1 2
-add r1 r1 r2
+slt r2 r1 2
+slt r3 r1 5
+sgt r4 r1 160
+sgt r5 r1 200
+add r1 r2 2
 add r1 r1 r3
 add r1 r1 r4
+add r1 r1 r5
 s lcd Color r1
 
-add currentDisplay currentDisplay 4
+add currentDisplay currentDisplay 2
 ble currentDisplay 24 main
 move currentDisplay 4
 j main
